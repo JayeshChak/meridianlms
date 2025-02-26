@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Next.js build output and caches
+.next/
+next/
+out/
+.vercel/
+.cache/
+dist/
+
+# Logs and debugging
+*.log
+logs/
+*.gz
+*.tmp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# VS Code and IDE settings
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Environment Variables (DO NOT COMMIT)
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# TypeScript build artifacts
+*.tsbuildinfo
+next-env.d.ts
+
+# Static and compiled files
+public/static/
+public/uploads/
+public/images/uploads/
+coverage/
+
+# Docker and deployment artifacts
+Dockerfile
+compose.yml
+compose.override.yml
+docker-compose.override.yml
+
+# OS & Miscellaneous files
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+cls
+directory_structure.txt
+
+# Yarn (if using PnP, uncomment these)
+# .pnp
+# .pnp.js
+# .yarn/install-state.gz
