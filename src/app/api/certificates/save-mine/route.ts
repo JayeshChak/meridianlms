@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/libs/auth";
 import { db } from "@/db";
-import { certification } from "@/db/schemas/certification";
+import { Certification } from "@/db/schemas/Certification";
 
-import { placeholders } from "@/db/schemas/placeholders";
+import { Placeholders } from "@/db/schemas/Placeholders";
 import { uploadToCloudinary } from "@/libs/uploadinary/upload";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { certificateIssuance } from "@/db/schemas/certificateIssuance";
+import { CertificateIssuance } from "@/db/schemas/CertificateIssuance";
 import { eq } from "drizzle-orm";
 
 function generateUniqueIdentifier() {
@@ -64,17 +64,17 @@ function stripHtmlTags(html: string | undefined): string {
 
 export async function POST(req: NextRequest) {
 	try {
-		// Authenticate the user
+		// Authenticate the User
 		let session = await getSession(req);
-		if (!session || !session.user) {
+		if (!session || !session.User) {
 			return NextResponse.json(
 				{ message: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
 
-		// Check user roles
-		const userRoles: string[] = session.user.roles || [];
+		// Check User roles
+		const userRoles: string[] = session.User.roles || [];
 		const allowedRoles = ["superAdmin", "instructor", "admin"];
 		const hasAccess = userRoles.some((role) => allowedRoles.includes(role));
 		if (!hasAccess) {
@@ -148,14 +148,14 @@ export async function POST(req: NextRequest) {
 
 		const { secure_url } = uploadResult.result;
 
-		//! Creation of new certificate ID HERE and insertion into certification table
+		//! Creation of new certificate ID HERE and insertion into Certification table
 
-		const certificateId = uuidv4();
+		const certificate_id = uuidv4();
 
 		await db.transaction(async (trx) => {
 			// Insert new certificate into the database
-			await trx.insert(certification).values({
-				id: certificateId,
+			await trx.insert(Certification).values({
+				id: certificate_id,
 				owner_id,
 				certificate_data_url: secure_url,
 				description:
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
 				course_id,
 			});
 
-			// ✅ Insert default placeholders
+			// ✅ Insert default Placeholders
 			const defaultPlaceholders = [
 				{
 					key: "studentName",
@@ -229,11 +229,11 @@ export async function POST(req: NextRequest) {
 				},
 			];
 
-			// Prepare and insert placeholders
+			// Prepare and insert Placeholders
 			const placeholdersToInsert = defaultPlaceholders.map(
 				(placeholder) => ({
 					id: uuidv4(),
-					certificate_id: certificateId,
+					certificate_id: certificate_id,
 					key: placeholder.key,
 					discount: 0,
 					label: placeholder.label,
@@ -246,29 +246,29 @@ export async function POST(req: NextRequest) {
 				})
 			);
 
-			await trx.insert(placeholders).values(placeholdersToInsert);
+			await trx.insert(Placeholders).values(placeholdersToInsert);
 		});
 
 		// Issue the certificate
 		// await issueCertificate({
-		//   certificateId,
+		//   certificate_id,
 		//   owner_id,
-		//   issuedBy: session.user.id,
+		//   issued_by: session.User.id,
 		// });
 
-		// ✅ Query all placeholders for the newly created certificate
+		// ✅ Query all Placeholders for the newly created certificate
 		const storedPlaceholders = await db
 			.select()
-			.from(placeholders)
-			.where(eq(placeholders.certificate_id, certificateId));
+			.from(Placeholders)
+			.where(eq(Placeholders.certificate_id, certificate_id));
 
 		return NextResponse.json(
 			{
 				message: "Certificate saved successfully.",
 				secure_url,
-				certificate_id: certificateId,
+				certificate_id: certificate_id,
 				owner_id: owner_id,
-				placeholders: storedPlaceholders, // ✅ Return the actual stored placeholders from DB
+				Placeholders: storedPlaceholders, // ✅ Return the actual stored Placeholders from DB
 			},
 			{ status: 200 }
 		);
@@ -285,27 +285,27 @@ export async function POST(req: NextRequest) {
 }
 
 // async function issueCertificate({
-//   certificateId,
+//   certificate_id,
 //   owner_id,
-//   issuedBy,
+//   issued_by,
 // }: {
-//   certificateId: string;
+//   certificate_id: string;
 //   owner_id: string;
-//   issuedBy: string;
+//   issued_by: string;
 // }) {
 //   try {
-//     const issuanceUniqueIdentifier = `CERT-ISSUE-${uuidv4()}`;
+//     const issuance_unique_identifier = `CERT-ISSUE-${uuidv4()}`;
 
-//     await db.insert(certificateIssuance).values({
+//     await db.insert(CertificateIssuance).values({
 //       id: uuidv4(),
-//       certificateId,
-//       issuedBy,
-//       issuedTo: owner_id,
-//       issuanceUniqueIdentifier,
+//       certificate_id,
+//       issued_by,
+//       issued_to: owner_id,
+//       issuance_unique_identifier,
 //       description: "Certificate issued directly after saving.",
-//       isRevoked: false,
-//       isExpired: false,
-//       issuedAt: new Date(),
+//       is_revoked: false,
+//       is_expired: false,
+//       issued_at: new Date(),
 //     });
 //   } catch (error) {
 //     console.error("Error issuing certificate:", error);

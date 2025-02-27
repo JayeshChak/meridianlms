@@ -1,47 +1,42 @@
-// src/db/schemas/user.ts
-import { sql } from 'drizzle-orm';
-import { pgTable, uuid, text, boolean as pgBoolean, timestamp,json } from 'drizzle-orm/pg-core';
+import { sql } from "drizzle-orm";
+import {
+	pgTable,
+	uuid,
+	text,
+	boolean,
+	timestamp,
+	jsonb,
+} from "drizzle-orm/pg-core";
 
-export const user = pgTable('User', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  uniqueIdentifier: text('uniqueIdentifier').unique().notNull(), // Unique identifier for user
-  name: text('name').notNull(),
-  username: text('username').unique(),
-  phone: text('phone').unique(), // Optional phone field
-  email: text('email').unique().notNull(),
-  password: text('password').notNull(),
-  emailVerified: timestamp('emailVerified'),
-  image: text('image'),
-
-  // role: text('role').default('user'),
-  roles: json('roles').default(sql`'["user"]'::json`).notNull(), // JSON to store multiple roles
-  enrolledCourses: json('enrolledCourses').default(sql`'[]'::json`).notNull(), // JSON to store enrolled courses as an array
-  // Wishlist field
-  wishlist: json('wishlist').default(sql`'[]'::json`).notNull(), // JSON to store wishlist items
-
-  isVerified: pgBoolean('isVerified').default(false).notNull(),
-  activationToken: text('activationToken'),
-  createdAt: timestamp('createdAt').defaultNow().notNull(), // Track when the user was created
-  updatedAt: timestamp('updatedAt').defaultNow().notNull(), // Track when the user was last updated
-
-  // Added fields for instructor details
-  instructorBio: text('instructorBio').default(''), // Text field for storing bio of the instructor
-  qualifications: json('qualifications').default(sql`'[]'::json`).notNull(), // JSON array to store qualifications  
+export const User = pgTable("User", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	unique_identifier: text("unique_identifier").unique().notNull(),
+	name: text("name").notNull(),
+	username: text("username").unique(),
+	phone: text("phone").unique(),
+	email: text("email").unique().notNull(),
+	password: text("password").notNull(),
+	email_verified: timestamp("email_verified", { withTimezone: true }),
+	image: text("image"),
+	roles: jsonb("roles")
+		.default(sql`'["User"]'::jsonb`)
+		.notNull(),
+	enrolled_courses: jsonb("enrolled_courses")
+		.default(sql`'[]'::jsonb`)
+		.notNull(),
+	wishlist: jsonb("wishlist")
+		.default(sql`'[]'::jsonb`)
+		.notNull(),
+	is_verified: boolean("is_verified").default(false).notNull(),
+	activation_token: text("activation_token"),
+	created_at: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updated_at: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	instructor_bio: text("instructor_bio").default(""),
+	qualifications: jsonb("qualifications")
+		.default(sql`'[]'::jsonb`)
+		.notNull(),
 });
-
-
-// import { pgTable, uuid, text, boolean as pgBoolean, timestamp } from 'drizzle-orm/pg-core';
-
-// export const user = pgTable('User', {
-//   id: uuid('id').defaultRandom().primaryKey(),
-//   name: text('name'),
-//   username: text('username').unique(),
-//   phone: text('phone').unique(),
-//   email: text('email').unique().notNull(),
-//   password: text('password'),
-//   emailVerified: timestamp('emailVerified'),
-//   image: text('image'),
-//   role: text('role'),
-//   isVerified: pgBoolean('isVerified').default(false).notNull(),
-//   activationToken: text('activationToken'), // New column for activation token
-// });

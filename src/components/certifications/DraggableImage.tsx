@@ -63,7 +63,7 @@ const DraggableImage: React.FC<DraggableImageProps> = ({
 
       setImages(updatedImages);
     }
-  }, [img, containerWidth, containerHeight]);
+  }, [img, containerWidth, containerHeight, images, setImages, image.id]);
 
   useEffect(() => {
     if (isSelected && trRef.current && shapeRef.current) {

@@ -1,41 +1,39 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { getServerSession } from "next-auth/next";
-import { questionnaires } from "@/db/schemas/questionnaire";
+import { Questionnaires } from "@/db/schemas/questionnaire";
 import { questions } from "@/db/schemas/questions";
-import { quizAttempts } from "@/db/schemas/quizAttempts";
+import { QuizAttempts } from "@/db/schemas/QuizAttempts";
 import { and, eq } from "drizzle-orm";
-import { user } from "@/db/schemas/user";
+import { User } from "@/db/schemas/User";
 import { options as authOptions } from "@/libs/auth";
-
-
 
 export async function POST(req: Request) {
 	try {
 		const session = await getServerSession(authOptions);
 		console.log("Session Data:", session);
 
-		if (!session?.user?.email) {
+		if (!session?.User?.email) {
 			return NextResponse.json(
 				{ error: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
 
-		const user_id = session.user.id;
+		const user_id = session.User.id;
 
-		// const user_id = userRecord[0].id; // Extract user ID
+		// const user_id = userRecord[0].id; // Extract User ID
 		const { questionnaire_id, answers } = await req.json();
 
 		//! --- New: Enforce the three-attempt rule ---
 
 		const existingAttempts = await db
-			.select({ id: quizAttempts.id })
-			.from(quizAttempts)
+			.select({ id: QuizAttempts.id })
+			.from(QuizAttempts)
 			.where(
 				and(
-					eq(quizAttempts.user_id, user_id),
-					eq(quizAttempts.questionnaire_id, questionnaire_id)
+					eq(QuizAttempts.user_id, user_id),
+					eq(QuizAttempts.questionnaire_id, questionnaire_id)
 				)
 			);
 
@@ -57,8 +55,8 @@ export async function POST(req: Request) {
 		/// Fetch questionnaire
 		const questionnaire = await db
 			.select()
-			.from(questionnaires)
-			.where(eq(questionnaires.id, questionnaire_id))
+			.from(Questionnaires)
+			.where(eq(Questionnaires.id, questionnaire_id))
 			.limit(1);
 
 		if (!questionnaire || questionnaire.length === 0) {
@@ -72,11 +70,11 @@ export async function POST(req: Request) {
 			.select({
 				id: questions.id,
 				question: questions.question,
-				correct_answer: questions.correctAnswer, // Ensure correct answer is fetched
+				correct_answer: questions.correct_answer, // Ensure correct answer is fetched
 				options: questions.options,
 			})
 			.from(questions)
-			.where(eq(questions.questionnaireId, questionnaire_id));
+			.where(eq(questions.questionnaire_id, questionnaire_id));
 
 		console.log("Fetched Questions from DB:", questionsList);
 
@@ -104,7 +102,7 @@ export async function POST(req: Request) {
 			}
 		});
 
-		// Store user answer data correctly
+		// Store User answer data correctly
 		const answerDetails = questionsList.map((question) => {
 			const userAnswer = answers[question.id]
 				? answers[question.id].trim().toLowerCase()
@@ -125,7 +123,7 @@ export async function POST(req: Request) {
 		const score = Math.round((correctAnswers / totalQuestions) * 100);
 
 		const attempt = await db
-			.insert(quizAttempts)
+			.insert(QuizAttempts)
 			.values({
 				user_id,
 				questionnaire_id,
@@ -134,7 +132,7 @@ export async function POST(req: Request) {
 				created_at: new Date(),
 				updated_at: new Date(),
 			})
-			.returning({ id: quizAttempts.id });
+			.returning({ id: QuizAttempts.id });
 
 		console.log("Insert Result:", attempt);
 
@@ -146,7 +144,7 @@ export async function POST(req: Request) {
 		}
 
 		// After inserting a new attempt
-		const updatedAttemptCount = totalAttempts + 1; 
+		const updatedAttemptCount = totalAttempts + 1;
 
 		return NextResponse.json({
 			success: true,

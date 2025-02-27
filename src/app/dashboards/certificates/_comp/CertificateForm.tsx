@@ -63,13 +63,13 @@ const CertificateForm: React.FC = () => {
 
 	const router = useRouter();
 
-	// Redirect to login if user is not authenticated
+	// Redirect to login if User is not authenticated
 	useEffect(() => {
 		if (status === "unauthenticated") {
 			signIn(); // Redirect to login page
 		} else if (
 			status === "authenticated" &&
-			!session?.user?.roles.some((role: string) =>
+			!session?.User?.roles.some((role: string) =>
 				["admin", "instructor", "superAdmin"].includes(role)
 			)
 		) {
@@ -78,23 +78,23 @@ const CertificateForm: React.FC = () => {
 		}
 	}, [status, session, router]);
 
-	//! fectch courses
+	//! fectch Courses
 	useEffect(() => {
-		if (session?.user?.roles?.includes("instructor")) {
+		if (session?.User?.roles?.includes("instructor")) {
 			const fetchCourses = async () => {
 				try {
-					const instructorId = session?.user?.id;
+					const instructorId = session?.User?.id;
 
 					const response = await fetch(
-						`${BASE_URL}/api/courses/instructorCourses?instructorId=${instructorId}`
+						`${BASE_URL}/api/Courses/instructorCourses?instructorId=${instructorId}`
 					);
 
 					if (!response.ok) {
-						throw new Error("Failed to fetch courses");
+						throw new Error("Failed to fetch Courses");
 					}
 
 					const data = await response.json();
-					const options = data.courses.map(
+					const options = data.Courses.map(
 						(course: { id: string; title: string }) => ({
 							value: course.id,
 							label: course.title,
@@ -102,17 +102,17 @@ const CertificateForm: React.FC = () => {
 					);
 					setCoursesOptions(options);
 				} catch (error) {
-					console.error("Error fetching courses:", error);
+					console.error("Error fetching Courses:", error);
 					setFormErrors((prev) => ({
 						...prev,
-						global: "Failed to load courses. Please try again.",
+						global: "Failed to load Courses. Please try again.",
 					}));
 				}
 			};
 
 			fetchCourses();
 		}
-	}, [session?.user?.id, session?.user?.roles]);
+	}, [session?.User?.id, session?.User?.roles]);
 
 	//! Handles image uploading
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +156,7 @@ const CertificateForm: React.FC = () => {
 		try {
 			const formDataToValidate: FormData = {
 				certificateName,
-				courseId: selectedCourse?.value || "",
+				course_id: selectedCourse?.value || "",
 				enabled: isEnabled !== null ? isEnabled : true,
 				orientation: orientationOption?.value || "landscape",
 				certificateImage,
@@ -201,18 +201,18 @@ const CertificateForm: React.FC = () => {
 
 			// Prepare the payload to match the server schema
 			const payload = {
-				owner_id: session?.user?.id || "",
+				owner_id: session?.User?.id || "",
 				certificate_data_url: base64Image ? base64Image : "",
 				title: certificateName,
 				description,
 				file_name: certificateImage?.name || fileName,
-				expirationDate: new Date(
+				expiration_date: new Date(
 					new Date().setFullYear(new Date().getFullYear() + 100)
 				).toISOString(),
-				isRevocable: true,
+				is_revocable: true,
 				metadata: {
 					courseName: selectedCourse?.label || "",
-					instructor: session?.user?.name || "",
+					instructor: session?.User?.name || "",
 					courseDuration: "6 months",
 					file_name: certificateImage?.name || "certificateImage.png",
 				},
@@ -348,7 +348,7 @@ const CertificateForm: React.FC = () => {
 						className="form-label flex items-center"
 					>
 						Session/Course{" "}
-						{formErrors.courseId && (
+						{formErrors.course_id && (
 							<span className="ml-[3px] flex items-center text-red-400">
 								*
 							</span>
@@ -359,14 +359,14 @@ const CertificateForm: React.FC = () => {
 						value={selectedCourse}
 						onChange={(option) => {
 							setSelectedCourse(option);
-							clearError("courseId");
+							clearError("course_id");
 						}}
 						placeholder="Select a course"
 						className="mt-1 font-no"
 					/>
-					{formErrors.courseId && (
+					{formErrors.course_id && (
 						<p className="text-xs ml-2 text-red-500 mt-1">
-							{formErrors.courseId}
+							{formErrors.course_id}
 						</p>
 					)}
 				</div>

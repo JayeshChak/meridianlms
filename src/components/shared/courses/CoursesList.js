@@ -1,41 +1,46 @@
 import React from "react";
 import CourseCard2 from "./CourseCard2";
 
-const CoursesList = ({ courses, card, isList, isNotSidebar, enrolledCourses }) => {
-  // console.log("courses list", courses && courses);
-  return (
-    <div className="flex flex-col gap-30px">
-      {courses?.length > 0 ? (
-        courses.map((course, idx) => (
-          <CourseCard2
-            key={idx}
-            course={course}
-            isList={isList}
-            card={card}
-            isNotSidebar={isNotSidebar}
-            enrolledCourses={enrolledCourses} // Pass enrolledCourses to CourseCard2
-          />
-        ))
-      ) : (
-        <span>No courses available</span>
-      )}
-    </div>
-  );
+const CoursesList = ({
+	Courses,
+	card,
+	isList,
+	isNotSidebar,
+	enrolled_courses,
+}) => {
+	// console.log("Courses list", Courses && Courses);
+	return (
+		<div className="flex flex-col gap-30px">
+			{Courses?.length > 0 ? (
+				Courses.map((course, idx) => (
+					<CourseCard2
+						key={idx}
+						course={course}
+						isList={isList}
+						card={card}
+						isNotSidebar={isNotSidebar}
+						enrolled_courses={enrolled_courses} // Pass enrolled_courses to CourseCard2
+					/>
+				))
+			) : (
+				<span>No Courses available</span>
+			)}
+		</div>
+	);
 };
 
 export default CoursesList;
 
-
 // import React from "react";
 // import CourseCard2 from "./CourseCard2";
 
-// const CoursesList = ({ courses, card, isList, isNotSidebar,enrolledCourses }) => {
-//   console.log("courses list", courses&&courses);
+// const CoursesList = ({ Courses, card, isList, isNotSidebar,enrolled_courses }) => {
+//   console.log("Courses list", Courses&&Courses);
 //   return (
 //     <div className="flex flex-col gap-30px">
 
-//       {courses?.length > 0 ? (
-//         courses?.map((course, idx) => (
+//       {Courses?.length > 0 ? (
+//         Courses?.map((course, idx) => (
 //           <CourseCard2
 //             key={idx}
 //             course={course}

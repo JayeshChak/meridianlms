@@ -13,32 +13,32 @@ import zoomSpeakerImage3 from "@/assets/images/grid/grid_small_3.jpg";
 import zoomSpeakerImage4 from "@/assets/images/grid/grid_small_4.jpg";
 import zoomSpeakerImage5 from "@/assets/images/grid/grid_small_5.jpg";
 const getAllMeetings = () => {
-  const images = [
-    zoomImage1,
-    zoomImage2,
-    zoomImage3,
-    zoomImage4,
-    zoomImage5,
-    zoomImage6,
-    zoomImage7,
-    zoomImage8,
-  ];
-  const speakerImages = [
-    zoomSpeakerImage1,
-    zoomSpeakerImage2,
-    zoomSpeakerImage3,
-    zoomSpeakerImage4,
-    zoomSpeakerImage4,
-    zoomSpeakerImage5,
-    zoomSpeakerImage4,
-    zoomSpeakerImage1,
-  ];
-  const meetings = allMeetings?.map((meeting, idx) => ({
-    ...meeting,
-    image: images[idx],
-    speakerImage: speakerImages[idx],
-  }));
-  return meetings;
+	const images = [
+		zoomImage1,
+		zoomImage2,
+		zoomImage3,
+		zoomImage4,
+		zoomImage5,
+		zoomImage6,
+		zoomImage7,
+		zoomImage8,
+	];
+	const speakerImages = [
+		zoomSpeakerImage1,
+		zoomSpeakerImage2,
+		zoomSpeakerImage3,
+		zoomSpeakerImage4,
+		zoomSpeakerImage4,
+		zoomSpeakerImage5,
+		zoomSpeakerImage4,
+		zoomSpeakerImage1,
+	];
+	const meetings = allMeetings?.map((Meeting, idx) => ({
+		...Meeting,
+		image: images[idx],
+		speakerImage: speakerImages[idx],
+	}));
+	return meetings;
 };
 
 export default getAllMeetings;

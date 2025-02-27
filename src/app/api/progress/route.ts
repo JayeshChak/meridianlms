@@ -1,32 +1,32 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { getServerSession } from "next-auth/next";
-import { quizAttempts } from "@/db/schemas/quizAttempts";
+import { QuizAttempts } from "@/db/schemas/QuizAttempts";
 import { and, eq, desc } from "drizzle-orm";
 import { options as authOptions } from "@/libs/auth";
 
 export async function GET(req: Request) {
 	try {
-		// Get user session
+		// Get User session
 		const session = await getServerSession(authOptions);
-		if (!session?.user?.id) {
+		if (!session?.User?.id) {
 			return NextResponse.json(
 				{ error: "Unauthorized" },
 				{ status: 401 }
 			);
 		}
 
-		const user_id = session.user.id;
+		const user_id = session.User.id;
 
-		// Fetch latest quiz scores for the user
+		// Fetch latest quiz scores for the User
 		const latestAttempts = await db
 			.select({
-				questionnaire_id: quizAttempts.questionnaire_id,
-				score: quizAttempts.score,
+				questionnaire_id: QuizAttempts.questionnaire_id,
+				score: QuizAttempts.score,
 			})
-			.from(quizAttempts)
-			.where(eq(quizAttempts.user_id, user_id))
-			.orderBy(desc(quizAttempts.created_at));
+			.from(QuizAttempts)
+			.where(eq(QuizAttempts.user_id, user_id))
+			.orderBy(desc(QuizAttempts.created_at));
 
 		// If no attempts found, return empty progress
 		if (!latestAttempts.length) {

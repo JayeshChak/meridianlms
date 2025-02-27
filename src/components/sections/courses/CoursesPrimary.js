@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import TabButtonSecondary from "@/components/shared/buttons/TabButtonSecondary";
-import CoursesGrid from "@/components/shared/courses/CoursesGrid";
-import CoursesList from "@/components/shared/courses/CoursesList";
+import CoursesGrid from "@/components/shared/Courses/CoursesGrid";
+import CoursesList from "@/components/shared/Courses/CoursesList";
 import Pagination from "@/components/shared/others/Pagination";
 import TabContentWrapper from "@/components/shared/wrappers/TabContentWrapper";
 import useTab from "@/hooks/useTab";
@@ -13,371 +13,419 @@ import CourseGridCardSkeleton from "@/components/Loaders/GridCard";
 import { useSession } from "next-auth/react";
 
 const sortInputs = [
-  "Sort by New",
-  "Title Ascending",
-  "Title Descending",
-  "Price Ascending",
-  "Price Descending",
+	"Sort by New",
+	"Title Ascending",
+	"Title Descending",
+	"Price Ascending",
+	"Price Descending",
 ];
 
 const CoursesPrimary = ({ isNotSidebar, isList, card }) => {
-  const [allCourses, setAllCourses] = useState([]); // Store all courses
-  const [currentCategories, setCurrentCategories] = useState([]);
-  const [currentTags, setCurrentTags] = useState([]);
-  const [currentSkillLevels, setCurrentSkillLevels] = useState([]);
-  const [filters, setFilters] = useState([]); // Initialize as empty array
-  const [sortInput, setSortInput] = useState("Sort by New");
-  const [totalCourses, setTotalCourses] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const coursesRef = useRef(null);
+	const [allCourses, setAllCourses] = useState([]); // Store all Courses
+	const [currentCategories, setCurrentCategories] = useState([]);
+	const [currentTags, setCurrentTags] = useState([]);
+	const [currentSkillLevels, setCurrentSkillLevels] = useState([]);
+	const [filters, setFilters] = useState([]); // Initialize as empty array
+	const [sortInput, setSortInput] = useState("Sort by New");
+	const [totalCourses, setTotalCourses] = useState(0);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const coursesRef = useRef(null);
 
-  const { data: session } = useSession();
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
+	const { data: session } = useSession();
+	const [enrolled_courses, setEnrolledCourses] = useState([]);
 
-  const { currentIdx, handleTabClick } = useTab();
+	const { currentIdx, handleTabClick } = useTab();
 
-  const limit = 12;
+	const limit = 12;
 
+	useEffect(() => {
+		if (session) {
+			// Fetch enrolled Courses from your API
+			fetch(`/api/User/${session.User.id}/enrollCourses`)
+				.then((res) => res.json())
+				.then((data) => {
+					setEnrolledCourses(data);
+				})
+				.catch((error) =>
+					console.error("Error fetching enrolled Courses:", error)
+				);
+		}
+	}, [session]);
 
-  useEffect(() => {
-    if (session) {
-      // Fetch enrolled courses from your API
-      fetch(`/api/user/${session.user.id}/enrollCourses`)
-        .then((res) => res.json())
-        .then((data) => {
-          setEnrolledCourses(data);
-        })
-        .catch((error) => console.error("Error fetching enrolled courses:", error));
-    }
-  }, [session]);
+	// Fetch Courses with filters applied
+	const fetchCourses = useCallback(async () => {
+		setIsLoading(true);
+		setError(null);
 
-  // Fetch courses with filters applied
-  const fetchCourses = async () => {
-    setIsLoading(true);
-    setError(null);
+		try {
+			// Construct query params for filters
+			const params = new URLSearchParams();
+			params.set("is_published", "true");
 
-    try {
-      // Construct query params for filters
-      const params = new URLSearchParams();
-      params.set("isPublished", "true");
+			// Append multiple Categories
+			currentCategories.forEach((category) => {
+				params.append("category", category);
+			});
 
-      // Append multiple categories
-      currentCategories.forEach((category) => {
-        params.append("category", category);
-      });
+			// Append multiple tags
+			currentTags.forEach((tag) => {
+				params.append("tag", tag);
+			});
 
-      // Append multiple tags
-      currentTags.forEach((tag) => {
-        params.append("tag", tag);
-      });
+			// Append multiple skill levels
+			currentSkillLevels.forEach((skill_level) => {
+				params.append("skill_level", skill_level);
+			});
 
-      // Append multiple skill levels
-      currentSkillLevels.forEach((skillLevel) => {
-        params.append("skillLevel", skillLevel);
-      });
+			if (sortInput) {
+				params.set("sort", sortInput);
+			}
 
-      if (sortInput) {
-        params.set("sort", sortInput);
-      }
+			// Pagination params
+			params.set("page", currentPage);
+			params.set("limit", limit);
 
-      // Pagination params
-      params.set("page", currentPage);
-      params.set("limit", limit);
+			const response = await fetch(`/api/Courses?${params.toString()}`);
+			if (!response.ok) {
+				throw new Error("Courses not found with the given filters");
+			}
 
-      const response = await fetch(`/api/courses?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error("Courses not found with the given filters");
-      }
+			const result = await response.json();
+			setAllCourses(result.data);
+			setTotalCourses(result.total);
+		} catch (error) {
+			setError(error.message || "An unknown error occurred");
+		} finally {
+			setIsLoading(false);
+		}
+	}, [
+		currentCategories,
+		currentTags,
+		currentSkillLevels,
+		sortInput,
+		currentPage,
+	]);
 
-      const result = await response.json();
-      setAllCourses(result.data);
-      setTotalCourses(result.total);
-    } catch (error) {
-      setError(error.message || "An unknown error occurred");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	// Fetch filters from API
+	const fetchFilters = async () => {
+		setIsLoading(true);
+		setError(null);
+		try {
+			// Fetch filters considering only published Courses
+			const response = await fetch(
+				`/api/Courses/filters?is_published=true`
+			);
+			if (!response.ok) {
+				throw new Error("Failed to fetch filters");
+			}
+			const filterData = await response.json();
+			setFilters(filterData); // Store filter data in state as an array
+		} catch (error) {
+			setError(error.message || "An unknown error occurred");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-  // Fetch filters from API
-  const fetchFilters = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Fetch filters considering only published courses
-      const response = await fetch(`/api/courses/filters?isPublished=true`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch filters");
-      }
-      const filterData = await response.json();
-      setFilters(filterData); // Store filter data in state as an array
-    } catch (error) {
-      setError(error.message || "An unknown error occurred");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	// Fetch all Courses and filters when component mounts
+	useEffect(() => {
+		fetchFilters(); // Fetch filters
+		fetchCourses(); // Fetch initial Courses
+	}, [fetchCourses]);
 
-  // Fetch all courses and filters when component mounts
-  useEffect(() => {
-    fetchFilters(); // Fetch filters
-    fetchCourses(); // Fetch initial courses
-  }, []);
+	// Trigger course fetching when filters or sorting changes
+	useEffect(() => {
+		fetchCourses();
+	}, [
+		currentCategories,
+		currentTags,
+		currentSkillLevels,
+		sortInput,
+		currentPage,
+		fetchCourses,
+	]);
 
-  // Trigger course fetching when filters or sorting changes
-  useEffect(() => {
-    fetchCourses();
-  }, [
-    currentCategories,
-    currentTags,
-    currentSkillLevels,
-    sortInput,
-    currentPage,
-  ]);
+	// Handle pagination
+	const handlePagination = (id) => {
+		if (id === "next" && currentPage * limit < totalCourses) {
+			setCurrentPage((prev) => prev + 1);
+		} else if (id === "prev" && currentPage > 1) {
+			setCurrentPage((prev) => prev - 1);
+		} else if (typeof id === "number") {
+			setCurrentPage(id + 1);
+		}
+		coursesRef.current.scrollIntoView({ behavior: "smooth" });
+	};
 
-  // Handle pagination
-  const handlePagination = (id) => {
-    if (id === "next" && currentPage * limit < totalCourses) {
-      setCurrentPage((prev) => prev + 1);
-    } else if (id === "prev" && currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    } else if (typeof id === "number") {
-      setCurrentPage(id + 1);
-    }
-    coursesRef.current.scrollIntoView({ behavior: "smooth" });
-  };
+	// Get filter inputs based on current state
+	const getCurrentFilterInputs = (input, ps) => {
+		if (input === "All") {
+			return ps.includes("All") ? [] : ["All"];
+		} else {
+			return ps.includes(input)
+				? ps.filter((item) => item !== input && item !== "All")
+				: [...ps.filter((item) => item !== "All"), input];
+		}
+	};
 
-  // Get filter inputs based on current state
-  const getCurrentFilterInputs = (input, ps) => {
-    if (input === "All") {
-      return ps.includes("All") ? [] : ["All"];
-    } else {
-      return ps.includes(input)
-        ? ps.filter((item) => item !== input && item !== "All")
-        : [...ps.filter((item) => item !== "All"), input];
-    }
-  };
+	// Handle filter selection
+	const handleFilters = (name, input) => {
+		switch (name) {
+			case "Categories":
+				setCurrentCategories((prev) =>
+					getCurrentFilterInputs(input, prev)
+				);
+				break;
+			case "Tags":
+				setCurrentTags((prev) => getCurrentFilterInputs(input, prev));
+				break;
+			case "Skill Levels":
+				setCurrentSkillLevels((prev) =>
+					getCurrentFilterInputs(input, prev)
+				);
+				break;
+			default:
+				break;
+		}
+		setCurrentPage(1); // Reset to first page on filter change
+	};
 
-  // Handle filter selection
-  const handleFilters = (name, input) => {
-    switch (name) {
-      case "Categories":
-        setCurrentCategories((prev) => getCurrentFilterInputs(input, prev));
-        break;
-      case "Tags":
-        setCurrentTags((prev) => getCurrentFilterInputs(input, prev));
-        break;
-      case "Skill Levels":
-        setCurrentSkillLevels((prev) => getCurrentFilterInputs(input, prev));
-        break;
-      default:
-        break;
-    }
-    setCurrentPage(1); // Reset to first page on filter change
-  };
+	const totalPages = Math.ceil(totalCourses / limit);
+	const paginationItems = Array.from(
+		{ length: totalPages },
+		(_, index) => index + 1
+	);
 
-  const totalPages = Math.ceil(totalCourses / limit);
-  const paginationItems = Array.from({ length: totalPages }, (_, index) => index + 1);
+	const tapButtons = [
+		{
+			name: <i className="icofont-layout"></i>,
+			content: (
+				<CoursesGrid
+					isNotSidebar={isNotSidebar}
+					Courses={allCourses}
+					enrolled_courses={enrolled_courses}
+				/>
+			),
+		},
+		{
+			name: <i className="icofont-listine-dots"></i>,
+			content: (
+				<CoursesList
+					isNotSidebar={isNotSidebar}
+					isList={isList}
+					Courses={allCourses}
+					card={card}
+					enrolled_courses={enrolled_courses}
+				/>
+			),
+		},
+	];
 
-  const tapButtons = [
-    {
-      name: <i className="icofont-layout"></i>,
-      content: (
-        <CoursesGrid
-          isNotSidebar={isNotSidebar}
-          courses={allCourses}
-          enrolledCourses={enrolledCourses}
-        />
-      ),
-    },
-    {
-      name: <i className="icofont-listine-dots"></i>,
-      content: (
-        <CoursesList
-          isNotSidebar={isNotSidebar}
-          isList={isList}
-          courses={allCourses}
-          card={card}
-          enrolledCourses={enrolledCourses}
-        />
-      ),
-    },
-  ];
+	return (
+		<div>
+			<div
+				className="container tab py-10 md:py-30px lg:py-40px 2xl:py-70px"
+				ref={coursesRef}
+			>
+				{/* Courses Header */}
+				<div
+					className="Courses-header flex justify-between items-center flex-wrap px-13px py-5px border border-borderColor dark:border-borderColor-dark mb-30px gap-y-5"
+					data-aos="fade-up"
+				>
+					<div>
+						{isLoading ? (
+							<SkeletonResultsText />
+						) : allCourses && totalCourses ? (
+							<p className="text-blackColor dark:text-blackColor-dark">
+								Showing {(currentPage - 1) * limit + 1} -{" "}
+								{currentPage * limit >= totalCourses
+									? totalCourses
+									: currentPage * limit}{" "}
+								of {totalCourses} Results
+							</p>
+						) : (
+							<p>No results found</p>
+						)}
+					</div>
+					<div className="flex items-center">
+						<div className="tab-links transition-all duraton-300 text-contentColor dark:text-contentColor-dark flex gap-11px">
+							{tapButtons?.map(({ name }, idx) => (
+								<TabButtonSecondary
+									key={idx}
+									name={name}
+									button={"icon"}
+									currentIdx={currentIdx}
+									handleTabClick={handleTabClick}
+									idx={idx}
+								/>
+							))}
+						</div>
+						<div className="pl-50px sm:pl-20 pr-10px">
+							<select
+								className="text-blackColor bg-whiteColor py-2 pr-2 pl-3 rounded-md outline-none border-4 border-transparent focus:border-blue-light box-border"
+								value={sortInput}
+								onChange={(e) => setSortInput(e.target.value)}
+							>
+								{sortInputs.map((input, idx) => (
+									<option key={idx} value={input}>
+										{input}
+									</option>
+								))}
+							</select>
+						</div>
+					</div>
+				</div>
 
-  return (
-    <div>
-      <div
-        className="container tab py-10 md:py-30px lg:py-40px 2xl:py-70px"
-        ref={coursesRef}
-      >
-        {/* Courses Header */}
-        <div
-          className="courses-header flex justify-between items-center flex-wrap px-13px py-5px border border-borderColor dark:border-borderColor-dark mb-30px gap-y-5"
-          data-aos="fade-up"
-        >
-          <div>
-            {isLoading ? (
-              <SkeletonResultsText />
-            ) : allCourses && totalCourses ? (
-              <p className="text-blackColor dark:text-blackColor-dark">
-                Showing {(currentPage - 1) * limit + 1} -{" "}
-                {currentPage * limit >= totalCourses
-                  ? totalCourses
-                  : currentPage * limit}{" "}
-                of {totalCourses} Results
-              </p>
-            ) : (
-              <p>No results found</p>
-            )}
-          </div>
-          <div className="flex items-center">
-            <div className="tab-links transition-all duraton-300 text-contentColor dark:text-contentColor-dark flex gap-11px">
-              {tapButtons?.map(({ name }, idx) => (
-                <TabButtonSecondary
-                  key={idx}
-                  name={name}
-                  button={"icon"}
-                  currentIdx={currentIdx}
-                  handleTabClick={handleTabClick}
-                  idx={idx}
-                />
-              ))}
-            </div>
-            <div className="pl-50px sm:pl-20 pr-10px">
-              <select
-                className="text-blackColor bg-whiteColor py-2 pr-2 pl-3 rounded-md outline-none border-4 border-transparent focus:border-blue-light box-border"
-                value={sortInput}
-                onChange={(e) => setSortInput(e.target.value)}
-              >
-                {sortInputs.map((input, idx) => (
-                  <option key={idx} value={input}>
-                    {input}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+				<div
+					className={`grid grid-cols-1 ${
+						isNotSidebar ? "" : "md:grid-cols-12"
+					} gap-30px`}
+				>
+					{/* Courses Sidebar */}
+					{!isNotSidebar && (
+						<div className="md:col-start-1 md:col-span-4 lg:col-span-3">
+							<div className="flex flex-col">
+								{/* Dynamic Categories and filters from API */}
+								{Array.isArray(filters) &&
+								filters.length > 0 ? (
+									filters?.map(({ name, inputs }, idx) => (
+										<div
+											key={idx}
+											className="pt-30px pr-15px pl-10px pb-23px 2xl:pt-10 2xl:pr-25px 2xl:pl-5 2xl:pb-33px mb-30px border border-borderColor dark:border-borderColor-dark"
+											data-aos="fade-up"
+										>
+											<h4 className="text-size-22 text-blackColor dark:text-blackColor-dark font-bold leading-30px mb-15px">
+												{name}
+											</h4>
+											<ul
+												className={`flex flex-col ${
+													name === "Categories"
+														? "gap-y-4"
+														: name === "Tags"
+														? "gap-y-23px"
+														: "gap-y-10px"
+												}`}
+											>
+												{inputs?.map((input, idx1) => (
+													<li key={idx1}>
+														<button
+															onClick={() =>
+																handleFilters(
+																	name,
+																	input.name ||
+																		input
+																)
+															}
+															className={`${
+																(currentCategories.includes(
+																	input.name ||
+																		input
+																) &&
+																	name ===
+																		"Categories") ||
+																(currentTags.includes(
+																	input.name ||
+																		input
+																) &&
+																	name ===
+																		"Tags") ||
+																(currentSkillLevels.includes(
+																	input.name ||
+																		input
+																) &&
+																	name ===
+																		"Skill Levels")
+																	? "bg-primaryColor text-contentColor-dark"
+																	: "text-contentColor dark:text-contentColor-dark hover:text-contentColor-dark hover:bg-primaryColor"
+															} text-sm font-medium px-13px py-2 border border-borderColor dark:border-borderColor-dark flex justify-between leading-7 transition-all duration-300 w-full`}
+														>
+															<span>
+																{input.name
+																	? input.name
+																	: input}
+															</span>
+															{input.totalCount && (
+																<span>
+																	{
+																		input.totalCount
+																	}
+																</span>
+															)}
+														</button>
+													</li>
+												))}
+											</ul>
+										</div>
+									))
+								) : (
+									<p>No filters available</p>
+								)}
+							</div>
+						</div>
+					)}
 
-        <div
-          className={`grid grid-cols-1 ${isNotSidebar ? "" : "md:grid-cols-12"
-            } gap-30px`}
-        >
-          {/* Courses Sidebar */}
-          {!isNotSidebar && (
-            <div className="md:col-start-1 md:col-span-4 lg:col-span-3">
-              <div className="flex flex-col">
-                {/* Dynamic categories and filters from API */}
-                {Array.isArray(filters) && filters.length > 0 ? (
-                  filters?.map(({ name, inputs }, idx) => (
-                    <div
-                      key={idx}
-                      className="pt-30px pr-15px pl-10px pb-23px 2xl:pt-10 2xl:pr-25px 2xl:pl-5 2xl:pb-33px mb-30px border border-borderColor dark:border-borderColor-dark"
-                      data-aos="fade-up"
-                    >
-                      <h4 className="text-size-22 text-blackColor dark:text-blackColor-dark font-bold leading-30px mb-15px">
-                        {name}
-                      </h4>
-                      <ul
-                        className={`flex flex-col ${name === "Categories"
-                          ? "gap-y-4"
-                          : name === "Tags"
-                            ? "gap-y-23px"
-                            : "gap-y-10px"
-                          }`}
-                      >
-                        {inputs?.map((input, idx1) => (
-                          <li key={idx1}>
-                            <button
-                              onClick={() =>
-                                handleFilters(name, input.name || input)
-                              }
-                              className={`${(currentCategories.includes(
-                                input.name || input
-                              ) &&
-                                name === "Categories") ||
-                                (currentTags.includes(input.name || input) &&
-                                  name === "Tags") ||
-                                (currentSkillLevels.includes(
-                                  input.name || input
-                                ) &&
-                                  name === "Skill Levels")
-                                ? "bg-primaryColor text-contentColor-dark"
-                                : "text-contentColor dark:text-contentColor-dark hover:text-contentColor-dark hover:bg-primaryColor"
-                                } text-sm font-medium px-13px py-2 border border-borderColor dark:border-borderColor-dark flex justify-between leading-7 transition-all duration-300 w-full`}
-                            >
-                              <span>{input.name ? input.name : input}</span>
-                              {input.totalCount && <span>{input.totalCount}</span>}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))
-                ) : (
-                  <p>No filters available</p>
-                )}
-              </div>
-            </div>
-          )}
+					{/* Courses Main Section */}
+					<div
+						className={`${
+							isNotSidebar
+								? ""
+								: "md:col-start-5 md:col-span-8 lg:col-start-4 lg:col-span-9"
+						} space-y-[30px]`}
+					>
+						{isLoading ? (
+							<div
+								className={`grid grid-cols-1 ${
+									isNotSidebar
+										? "sm:grid-cols-2 xl:grid-cols-3"
+										: "sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+								} gap-30px`}
+							>
+								{/* Render multiple skeleton cards */}
+								{[...Array(6)].map((_, idx) => (
+									<CourseGridCardSkeleton key={idx} />
+								))}
+							</div>
+						) : error ? (
+							<p> {String(error)}</p>
+						) : allCourses?.length ? (
+							<>
+								<div className="tab-contents">
+									{tapButtons?.map(({ content }, idx) => (
+										<TabContentWrapper
+											key={idx}
+											isShow={idx === currentIdx}
+										>
+											{React.isValidElement(content) ? (
+												content
+											) : (
+												<div>Error loading content</div>
+											)}
+										</TabContentWrapper>
+									))}
+								</div>
 
-          {/* Courses Main Section */}
-          <div
-            className={`${isNotSidebar
-              ? ""
-              : "md:col-start-5 md:col-span-8 lg:col-start-4 lg:col-span-9"
-              } space-y-[30px]`}
-          >
-            {isLoading ? (
-              <div
-                className={`grid grid-cols-1 ${isNotSidebar
-                  ? "sm:grid-cols-2 xl:grid-cols-3"
-                  : "sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
-                  } gap-30px`}
-              >
-                {/* Render multiple skeleton cards */}
-                {[...Array(6)].map((_, idx) => (
-                  <CourseGridCardSkeleton key={idx} />
-                ))}
-              </div>
-            ) : error ? (
-              <p> {String(error)}</p>
-            ) : allCourses?.length ? (
-              <>
-                <div className="tab-contents">
-                  {tapButtons?.map(({ content }, idx) => (
-                    <TabContentWrapper key={idx} isShow={idx === currentIdx}>
-                      {React.isValidElement(content) ? (
-                        content
-                      ) : (
-                        <div>Error loading content</div>
-                      )}
-                    </TabContentWrapper>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {totalCourses > limit && (
-                  <Pagination
-                    pages={paginationItems}
-                    totalItems={totalCourses}
-                    handlePagesnation={handlePagination}
-                    currentPage={currentPage}
-                    skip={(currentPage - 1) * limit}
-                    limit={limit}
-                  />
-                )}
-              </>
-            ) : (
-              <NoData message={"No Courses Found"} />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+								{/* Pagination */}
+								{totalCourses > limit && (
+									<Pagination
+										pages={paginationItems}
+										totalItems={totalCourses}
+										handlePagesnation={handlePagination}
+										currentPage={currentPage}
+										skip={(currentPage - 1) * limit}
+										limit={limit}
+									/>
+								)}
+							</>
+						) : (
+							<NoData message={"No Courses Found"} />
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default CoursesPrimary;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { placeholders as placeholdersTable } from "@/db/schemas/placeholders";
+import { Placeholders as placeholdersTable } from "@/db/schemas/Placeholders";
 import { eq } from "drizzle-orm";
 
 // PATCH API to update placeholder visibility

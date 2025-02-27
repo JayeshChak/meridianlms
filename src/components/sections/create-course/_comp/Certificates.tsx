@@ -48,7 +48,7 @@ type Certificate = {
 	orientation?: string;
 	max_download?: number;
 	is_deleted?: boolean;
-	placeholders?: CertificatePlaceHolders[];
+	Placeholders?: CertificatePlaceHolders[];
 };
 
 const CertificatesTemp: React.FC = () => {
@@ -82,7 +82,7 @@ const CertificatesTemp: React.FC = () => {
 	const [selectedCertificate, setSelectedCertificate] =
 		useState<Certificate | null>(null);
 
-	// Helper function to check if the certificateData is a valid image URL
+	// Helper function to check if the certificate_data_url is a valid image URL
 	const isValidImageUrl = (url: string): boolean => {
 		return /^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)$/i.test(url);
 	};
@@ -121,9 +121,9 @@ const CertificatesTemp: React.FC = () => {
 	}, []);
 
 	// Function to handle certificate selection and send the PATCH request
-	const handleCertificateSelect = async (certificateId: string) => {
-		setSelectedCertificateId(certificateId); // Set the selected certificate's ID
-		setLoadingCertificates((prev) => ({ ...prev, [certificateId]: true })); // Start loading for this certificate
+	const handleCertificateSelect = async (certificate_id: string) => {
+		setSelectedCertificateId(certificate_id); // Set the selected certificate's ID
+		setLoadingCertificates((prev) => ({ ...prev, [certificate_id]: true })); // Start loading for this certificate
 
 		if (!course_id) {
 			showAlert(
@@ -132,7 +132,7 @@ const CertificatesTemp: React.FC = () => {
 			);
 			setLoadingCertificates((prev) => ({
 				...prev,
-				[certificateId]: false,
+				[certificate_id]: false,
 			})); // Stop loading on early return
 			return;
 		}
@@ -147,10 +147,9 @@ const CertificatesTemp: React.FC = () => {
 				{
 					method: "PATCH",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ courseId: course_id }),
+					body: JSON.stringify({ course_id: course_id }),
 				}
 			);
-			
 
 			if (!unpublishResponse.ok) {
 				const errorData = await unpublishResponse.json();
@@ -162,7 +161,7 @@ const CertificatesTemp: React.FC = () => {
 			console.log("✅ Unpublish API Success");
 
 			const responsex = await fetch(
-				`/api/certificates/${certificateId}`,
+				`/api/certificates/${certificate_id}`,
 				{
 					method: "PATCH",
 					headers: { "Content-Type": "application/json" },
@@ -179,10 +178,10 @@ const CertificatesTemp: React.FC = () => {
 
 			console.log("✅ Publish API Success");
 
-			const response = await fetch(`/api/courses/${course_id}`, {
+			const response = await fetch(`/api/Courses/${course_id}`, {
 				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ certificateId }), // Updating the course
+				body: JSON.stringify({ certificate_id }), // Updating the course
 			});
 
 			if (!response.ok) {
@@ -200,7 +199,7 @@ const CertificatesTemp: React.FC = () => {
 
 			setCertificates((prev) =>
 				prev.map((cert) =>
-					cert.id === certificateId
+					cert.id === certificate_id
 						? { ...cert, is_published: true }
 						: { ...cert, is_published: false }
 				)
@@ -223,7 +222,7 @@ const CertificatesTemp: React.FC = () => {
 			);
 
 			// Automatically preview the certificate after updating it
-			handlePreview(certificateId);
+			handlePreview(certificate_id);
 		} catch (err: any) {
 			console.error("❌ API Error:", err);
 			showAlert(
@@ -233,7 +232,7 @@ const CertificatesTemp: React.FC = () => {
 		} finally {
 			setLoadingCertificates((prev) => ({
 				...prev,
-				[certificateId]: false,
+				[certificate_id]: false,
 			})); // Stop loading
 		}
 	};
@@ -286,9 +285,9 @@ const CertificatesTemp: React.FC = () => {
 	}, [certificates]);
 
 	// Function to handle preview (opens modal)
-	const handlePreview = (certificateId: string) => {
+	const handlePreview = (certificate_id: string) => {
 		const certificate = certificates.find(
-			(cert) => cert.id === certificateId
+			(cert) => cert.id === certificate_id
 		);
 		if (certificate) {
 			setSelectedCertificate(certificate);
@@ -303,20 +302,20 @@ const CertificatesTemp: React.FC = () => {
 	};
 
 	// Handler for Create and Download actions
-	const handleCreate = (certificateId: string) => {
+	const handleCreate = (certificate_id: string) => {
 		// Implement your create certificate logic here
-		console.log(`Create certificate with ID: ${certificateId}`);
+		console.log(`Create certificate with ID: ${certificate_id}`);
 		showAlert("info", "Create Certificate action triggered.");
-		router.push("/courses/certificate/create-certificate");
+		router.push("/Courses/certificate/create-certificate");
 		// For example, navigate to a create page or open a different modal
 	};
 
-	const handleDownload = (certificateId: string) => {
+	const handleDownload = (certificate_id: string) => {
 		// Implement your download certificate logic here
-		console.log(`Download certificate with ID: ${certificateId}`);
+		console.log(`Download certificate with ID: ${certificate_id}`);
 		// Example: Trigger a download of the certificate image
 		const certificate = certificates.find(
-			(cert) => cert.id === certificateId
+			(cert) => cert.id === certificate_id
 		);
 		if (
 			certificate &&

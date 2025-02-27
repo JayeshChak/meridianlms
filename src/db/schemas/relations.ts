@@ -1,24 +1,26 @@
 import { relations } from "drizzle-orm";
-import { chapters } from "./courseChapters";
-import { courses } from "./courses";
-import { lectures } from "./lectures";
+import { Chapters } from "./Chapters";
+import { Courses } from "./Courses";
+import { Lectures } from "./Lectures";
 
-// Relations
-export const coursesRelations = relations(courses, ({ many }) => ({
-	chapters: many(chapters),
+// Course Relations
+export const CoursesRelations = relations(Courses, ({ many }) => ({
+	chapters: many(Chapters), // Changed to lowercase for better readability
 }));
 
-export const chaptersRelations = relations(chapters, ({ one, many }) => ({
-	course: one(courses, {
-		fields: [chapters.courseId],
-		references: [courses.id],
+// Chapter Relations
+export const ChaptersRelations = relations(Chapters, ({ one, many }) => ({
+	course: one(Courses, {
+		fields: [Chapters.course_id],
+		references: [Courses.id],
 	}),
-	lectures: many(lectures),
+	lectures: many(Lectures), // Changed to lowercase for consistency
 }));
 
-export const lecturesRelations = relations(lectures, ({ one }) => ({
-	chapter: one(chapters, {
-		fields: [lectures.chapterId],
-		references: [chapters.id],
+// Lecture Relations
+export const LecturesRelations = relations(Lectures, ({ one }) => ({
+	chapter: one(Chapters, {
+		fields: [Lectures.chapter_id],
+		references: [Chapters.id],
 	}),
 }));

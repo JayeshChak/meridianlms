@@ -1,7 +1,7 @@
 import React from "react";
 import DropdownLink from "./DropdownLink";
 import DropdownWrapperPrimary from "@/components/shared/wrappers/DropdownWrapperPrimary";
-import DropdownPrimary from "./DropdownPrimary";
+import { DropdownPrimary } from "./DropdownComponents";
 
 const DropdownItem = ({ item }) => {
   const { name, status, type, dropdown, path } = item;

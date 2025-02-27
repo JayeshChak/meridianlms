@@ -8,11 +8,11 @@ import { BASE_URL } from "@/actions/constant";
 import QuestionnaireQuiz from "@/components/shared/lessons/_comp/QuizModal";
 import Swal from "sweetalert2";
 
-// Function to fetch chapters by chapterId
-const fetchChaptersByChapterId = async (chapterId) => {
+// Function to fetch Chapters by chapter_id
+const fetchChaptersByChapterId = async (chapter_id) => {
 	try {
 		const res = await fetch(
-			`${BASE_URL}/api/courses/chapters/${chapterId}`,
+			`${BASE_URL}/api/Courses/Chapters/${chapter_id}`,
 			{
 				method: "GET",
 				headers: {
@@ -22,50 +22,50 @@ const fetchChaptersByChapterId = async (chapterId) => {
 			}
 		);
 		if (!res.ok) {
-			throw new Error("Failed to fetch chapters");
+			throw new Error("Failed to fetch Chapters");
 		}
 		const data = await res.json();
 		return data;
 	} catch (error) {
-		console.error("Error fetching chapters:", error);
+		console.error("Error fetching Chapters:", error);
 		return null;
 	}
 };
 
 const LessonAccordion = ({
-	chapterId,
+	chapter_id,
 	extra = null, // Default value if extra is not provided
 	isEnrolled = false,
 	courseOwnerId = "",
 	userRoles = [], // Default to empty array to prevent undefined errors
 }) => {
-	const [chapters, setChapters] = useState([]);
+	const [Chapters, setChapters] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [activeIndex, setActiveIndex] = useState(-1); // Initialize to -1 (no accordion open)
-	const [questionnaires, setQuestionnaires] = useState({});
+	const [Questionnaires, setQuestionnaires] = useState({});
 
 	const [progressRefresh, setProgressRefresh] = useState(0); // 👈 Add this line
 
 	const [activeQuiz, setActiveQuiz] = useState(null);
 	const [courseQuizzes, setCourseQuizzes] = useState(null);
-	const [questionnaireId, setQuestionnaireId] = useState(null);
+	const [questionnaire_id, setQuestionnaireId] = useState(null);
 	const [showQuiz, setShowQuiz] = useState(false);
 
 	const [quizScores, setQuizScores] = useState({}); // Stores scores
-	const [quizAttempts, setQuizAttempts] = useState({}); // ✅ Define quizAttempts state
+	const [QuizAttempts, setQuizAttempts] = useState({}); // ✅ Define QuizAttempts state
 	const [attemptsLoaded, setAttemptsLoaded] = useState(false); // ✅ Track whether attempts have been fetched
 
-	// Determine user roles
+	// Determine User roles
 	const isSuperAdmin = userRoles.includes("superAdmin");
 	const isInstructor = userRoles.includes("instructor");
 	const isCourseOwner = courseOwnerId !== "" && isInstructor;
 
-	// Determine if the user can access all lessons
+	// Determine if the User can access all lessons
 	const canAccessAll = isSuperAdmin || isEnrolled || isCourseOwner;
 
 	useEffect(() => {
-		console.log("Updated attempts:", quizAttempts);
-	}, [quizAttempts]); // ✅ Logs whenever quizAttempts state updates
+		console.log("Updated attempts:", QuizAttempts);
+	}, [QuizAttempts]); // ✅ Logs whenever QuizAttempts state updates
 
 	useEffect(() => {
 		const fetchQuizAttempts = async () => {
@@ -116,44 +116,44 @@ const LessonAccordion = ({
 		};
 
 		fetchProgress();
-	}, [chapterId, progressRefresh]); // ✅ Runs again when progress changes
+	}, [chapter_id, progressRefresh]); // ✅ Runs again when progress changes
 
 	useEffect(() => {
 		const loadChaptersAndQuestionnaires = async () => {
 			setLoading(true);
-			console.log("Fetching chapters for chapterId:", chapterId);
+			console.log("Fetching Chapters for chapter_id:", chapter_id);
 
-			const fetchedChapters = await fetchChaptersByChapterId(chapterId);
+			const fetchedChapters = await fetchChaptersByChapterId(chapter_id);
 
-			if (fetchedChapters?.chapters) {
-				setChapters(fetchedChapters.chapters);
+			if (fetchedChapters?.Chapters) {
+				setChapters(fetchedChapters.Chapters);
 				// Collect questionnaire IDs
-				const chapterQuestionnaires = fetchedChapters.chapters
-					.filter((chapter) => chapter.questionnaireId != null)
-					.map((chapter) => ({
-						chapterId: chapter.id,
-						questionnaireId: chapter.questionnaireId,
-					}));
+				const chapterQuestionnaires = fetchedChapters.Chapters.filter(
+					(chapter) => chapter.questionnaire_id != null
+				).map((chapter) => ({
+					chapter_id: chapter.id,
+					questionnaire_id: chapter.questionnaire_id,
+				}));
 
 				console.log("Questionnaire IDs found:", chapterQuestionnaires);
 
 				if (chapterQuestionnaires.length > 0) {
 					try {
 						const quizPromises = chapterQuestionnaires.map(
-							({ chapterId, questionnaireId }) =>
-								// .filter(({ questionnaireId }) => questionnaireId !== null)
+							({ chapter_id, questionnaire_id }) =>
+								// .filter(({ questionnaire_id }) => questionnaire_id !== null)
 								fetch(
-									`${BASE_URL}/api/courses/chapters/lectures/questionnaires/${questionnaireId}`
+									`${BASE_URL}/api/Courses/Chapters/Lectures/Questionnaires/${questionnaire_id}`
 								)
 									.then((res) =>
 										res.ok
 											? res.json()
 											: Promise.reject(
-													`Failed to fetch quiz for chapter ${chapterId}`
+													`Failed to fetch quiz for chapter ${chapter_id}`
 											  )
 									)
 									.then((quizData) => ({
-										chapterId,
+										chapter_id,
 										quizData,
 									}))
 						);
@@ -164,12 +164,12 @@ const LessonAccordion = ({
 						const quizzes = {};
 						quizResults.forEach((result) => {
 							if (result.status === "fulfilled") {
-								const { chapterId, quizData } = result.value;
-								quizzes[chapterId] = {
+								const { chapter_id, quizData } = result.value;
+								quizzes[chapter_id] = {
 									id: quizData.id,
 									title: quizData.title,
 									questions: quizData.questions,
-									questionnaireId: quizData.id,
+									questionnaire_id: quizData.id,
 								};
 							} else {
 								console.error(
@@ -181,7 +181,7 @@ const LessonAccordion = ({
 
 						setQuestionnaires(quizzes);
 					} catch (error) {
-						console.error("Error fetching questionnaires:", error);
+						console.error("Error fetching Questionnaires:", error);
 					}
 				}
 			}
@@ -190,11 +190,11 @@ const LessonAccordion = ({
 		};
 
 		loadChaptersAndQuestionnaires();
-	}, [chapterId, progressRefresh]);
+	}, [chapter_id, progressRefresh]);
 
-	const updateScoreInAccordion = (questionnaireId, scorePercentage) => {
+	const updateScoreInAccordion = (questionnaire_id, scorePercentage) => {
 		const quizSection = document.querySelector(
-			`[data-questionnaire-id="${questionnaireId}"]`
+			`[data-questionnaire-id="${questionnaire_id}"]`
 		);
 
 		if (!quizSection) return;
@@ -357,7 +357,7 @@ const LessonAccordion = ({
 		// Submit Button Click Event
 		submitButton.onclick = async () => {
 			try {
-				// ✅ Collect user answers before submitting
+				// ✅ Collect User answers before submitting
 				let userAnswers = {};
 				let correctAnswers = 0;
 
@@ -366,9 +366,9 @@ const LessonAccordion = ({
 						`input[name="q${index}"]:checked`
 					);
 
-					const correctAnswer =
-						q.correct_answer || q.correctAnswer
-							? String(q.correct_answer || q.correctAnswer)
+					const correct_answer =
+						q.correct_answer || q.correct_answer
+							? String(q.correct_answer || q.correct_answer)
 									.trim()
 									.toLowerCase()
 							: null;
@@ -377,7 +377,7 @@ const LessonAccordion = ({
 						? String(selectedOption.value).trim().toLowerCase()
 						: null;
 
-					if (selectedAnswer === correctAnswer) correctAnswers++;
+					if (selectedAnswer === correct_answer) correctAnswers++;
 
 					userAnswers[q.id] = selectedAnswer;
 				});
@@ -390,7 +390,7 @@ const LessonAccordion = ({
 
 				// ✅ Now define `quizAttemptData` before using it
 				const quizAttemptData = {
-					questionnaire_id: quiz.questionnaireId,
+					questionnaire_id: quiz.questionnaire_id,
 					answers: userAnswers,
 				};
 
@@ -423,20 +423,20 @@ const LessonAccordion = ({
 				// ✅ Ensure the score updates immediately in UI
 				setQuizScores((prev) => ({
 					...prev,
-					[quiz.questionnaireId]: scorePercentage, // ✅ Store the latest score
+					[quiz.questionnaire_id]: scorePercentage, // ✅ Store the latest score
 				}));
 
 				// ✅ Update the state with the latest attempt count
 				setQuizAttempts((prev) => ({
 					...prev,
-					[quiz.questionnaireId]: Number(updatedAttempts) || 0,
+					[quiz.questionnaire_id]: Number(updatedAttempts) || 0,
 				}));
 
 				// ✅ Ensure state always has a valid number
 				if (!Number.isFinite(updatedAttempts)) {
 					setQuizAttempts((prev) => ({
 						...prev,
-						[quiz.questionnaireId]: 3, // Assume max attempts to prevent rendering error
+						[quiz.questionnaire_id]: 3, // Assume max attempts to prevent rendering error
 					}));
 				}
 
@@ -464,7 +464,7 @@ const LessonAccordion = ({
 				// ✅ Remove "Start Quiz" button dynamically when attempts reach 3
 				if (updatedAttempts >= 3) {
 					const startQuizButton = document.querySelector(
-						`[data-questionnaire-id="${quiz.questionnaireId}"] .start-quiz-btn`
+						`[data-questionnaire-id="${quiz.questionnaire_id}"] .start-quiz-btn`
 					);
 					if (startQuizButton) startQuizButton.remove();
 				}
@@ -474,7 +474,7 @@ const LessonAccordion = ({
 				// ✅ Ensure error doesn't break state
 				setQuizAttempts((prev) => ({
 					...prev,
-					[quiz.questionnaireId]: 3, // Assume max attempts
+					[quiz.questionnaire_id]: 3, // Assume max attempts
 				}));
 
 				Swal.fire({
@@ -505,8 +505,8 @@ const LessonAccordion = ({
 		);
 	}
 
-	if (!chapters || chapters.length === 0) {
-		return <p>No chapters available.</p>;
+	if (!Chapters || Chapters.length === 0) {
+		return <p>No Chapters available.</p>;
 	}
 
 	// Toggle the active state of the accordion
@@ -525,12 +525,12 @@ const LessonAccordion = ({
 		);
 	}
 
-	if (!chapters || chapters.length === 0) {
-		return <p>No chapters available.</p>;
+	if (!Chapters || Chapters.length === 0) {
+		return <p>No Chapters available.</p>;
 	}
 
 	// Define a unique index for "Course Materials"
-	const courseMaterialsIndex = chapters.length;
+	const courseMaterialsIndex = Chapters.length;
 
 	// Add after courseMaterialsIndex definition
 	const quizSectionIndex = courseMaterialsIndex + 1;
@@ -538,7 +538,7 @@ const LessonAccordion = ({
 	return (
 		<div>
 			<ul className="accordion-container curriculum">
-				{chapters.map((chapter, index) => (
+				{Chapters.map((chapter, index) => (
 					<li
 						key={chapter.id}
 						className={`accordion mb-25px overflow-hidden ${
@@ -589,18 +589,18 @@ const LessonAccordion = ({
 									<LessonList lessons={chapter.lessons} />
 
 									{/* Quiz Button */}
-									{questionnaires[chapter.id] && (
+									{Questionnaires[chapter.id] && (
 										<div
 											className="mt-4 border-t pt-4"
 											data-questionnaire-id={
-												questionnaires[chapter.id].id
+												Questionnaires[chapter.id].id
 											}
 										>
 											<div className="flex items-center justify-between">
 												<h3 className="text-lg font-medium">
 													Chapter Quiz:{" "}
 													{
-														questionnaires[
+														Questionnaires[
 															chapter.id
 														].title
 													}
@@ -610,7 +610,7 @@ const LessonAccordion = ({
 													{/* Start Quiz Button */}
 													{(() => {
 														const quizId =
-															questionnaires[
+															Questionnaires[
 																chapter.id
 															]?.id;
 
@@ -621,10 +621,10 @@ const LessonAccordion = ({
 														// ✅ Get attempts from state, default to 0 if not found
 														const attempts =
 															quizId &&
-															typeof quizAttempts[
+															typeof QuizAttempts[
 																quizId
 															] === "number"
-																? quizAttempts[
+																? QuizAttempts[
 																		quizId
 																  ]
 																: 0;
@@ -654,7 +654,7 @@ const LessonAccordion = ({
 														) {
 															console.error(
 																"Invalid attempt count detected:",
-																quizAttempts[
+																QuizAttempts[
 																	quizId
 																]
 															);
@@ -667,12 +667,12 @@ const LessonAccordion = ({
 																onClick={() =>
 																	handleQuizStart(
 																		{
-																			...questionnaires[
+																			...Questionnaires[
 																				chapter
 																					.id
 																			],
 																			questions:
-																				questionnaires[
+																				Questionnaires[
 																					chapter
 																						.id
 																				].questions.map(
@@ -682,7 +682,7 @@ const LessonAccordion = ({
 																						...q,
 																						correct_answer:
 																							q.correct_answer ||
-																							q.correctAnswer,
+																							q.correct_answer,
 																					})
 																				),
 																		}
@@ -710,7 +710,7 @@ const LessonAccordion = ({
 
 											<p className="text-sm text-gray-600">
 												{
-													questionnaires[chapter.id]
+													Questionnaires[chapter.id]
 														.questions.length
 												}{" "}
 												Questions
@@ -720,7 +720,7 @@ const LessonAccordion = ({
 												Score:{" "}
 												{Number(
 													quizScores[
-														questionnaires[
+														Questionnaires[
 															chapter.id
 														]?.id
 													]
@@ -777,7 +777,7 @@ const LessonAccordion = ({
 								style={{ overflow: "hidden" }}
 							>
 								<div className="content-wrapper p-10px md:px-30px">
-									<Extras lessonId={chapters[0]?.id} />
+									<Extras lessonId={Chapters[0]?.id} />
 								</div>
 							</div>
 						</div>

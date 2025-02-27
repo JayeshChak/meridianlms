@@ -12,50 +12,50 @@ import "swiper/css/effect-cards";
 import "./globals.css";
 import { getServerSession } from "next-auth/next";
 import { options } from "@/libs/auth";
-import SessionProvider from "@/components/provider/provider"
+import SessionProvider from "@/components/provider/provider";
 import { getSession } from "@/libs/auth";
-import { Providers } from './providers';
+import { Providers } from "./providers";
 
 export const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-inter",
+	subsets: ["latin"],
+	weight: ["300", "400", "500", "600", "700"],
+	display: "swap",
+	variable: "--font-inter",
 });
 
 export const hind = Hind({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-hind",
+	subsets: ["latin"],
+	weight: ["300", "400", "500", "600", "700"],
+	display: "swap",
+	variable: "--font-hind",
 });
 
 export const metadata = {
-  title: "Home 1 | Meridian LMS - Education LMS Template",
-  description: "Home description",
+	title: "Home 1 | Meridian LMS - Education LMS Template",
+	description: "Home description",
 };
 
 export default async function RootLayout({ children }) {
-  const session = await getSession();
+	const session = await getSession(req);
 
-  return (
-    <html lang="en" className={`${hind.variable}`}>
-      <body
-        className={`relative leading-[1.8] bg-bodyBg dark:bg-bodyBg-dark z-0 ${inter.className}`}
-      >
-        <PreloaderPrimary />
-        <Providers>
-          <SessionProvider session={session}>
-            {children}
-          </SessionProvider>
-        </Providers>
+	return (
+		<html lang="en" className={`${hind.variable}`}>
+			<body
+				className={`relative leading-[1.8] bg-bodyBg dark:bg-bodyBg-dark z-0 ${inter.className}`}
+			>
+				<PreloaderPrimary />
+				<Providers>
+					<SessionProvider session={session}>
+						{children}
+					</SessionProvider>
+				</Providers>
 
-        {/* theme fixed shadow */}
-        <div>
-          <FixedShadow />
-          <FixedShadow align={"right"} />
-        </div>
-      </body>
-    </html>
-  );
+				{/* theme fixed shadow */}
+				<div>
+					<FixedShadow />
+					<FixedShadow align={"right"} />
+				</div>
+			</body>
+		</html>
+	);
 }

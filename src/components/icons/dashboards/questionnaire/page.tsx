@@ -5,23 +5,23 @@ import DsahboardWrapper from "@/components/shared/wrappers/DsahboardWrapper";
 import PageWrapper from "@/components/shared/wrappers/PageWrapper";
 
 export const metadata = {
-  title: "Questionnaire Dashboard | Meridian LMS",
-  description: "Manage your course questionnaires",
+	title: "Questionnaire Dashboard | Meridian LMS",
+	description: "Manage your course Questionnaires",
 };
 
 function QuestionnairePage() {
-  return (
-    <PageWrapper>
-      <main>
-        <DsahboardWrapper>
-          <DashboardContainer>
-            <QuestionnaireMain />
-          </DashboardContainer>
-        </DsahboardWrapper>
-        <ThemeController />
-      </main>
-    </PageWrapper>
-  );
+	return (
+		<PageWrapper>
+			<main>
+				<DsahboardWrapper>
+					<DashboardContainer>
+						<QuestionnaireMain />
+					</DashboardContainer>
+				</DsahboardWrapper>
+				<ThemeController />
+			</main>
+		</PageWrapper>
+	);
 }
 
-export default QuestionnairePage; 
+export default QuestionnairePage;

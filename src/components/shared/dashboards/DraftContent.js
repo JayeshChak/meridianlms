@@ -1,9 +1,9 @@
-import CourseCard from "../courses/CourseCard";
+import CourseCard from "../Courses/CourseCard";
 
-const DraftContent = ({ courses }) => {
-  return courses?.map((course, idx) => (
-    <CourseCard key={idx} course={course} type={"primary"} />
-  ));
+const DraftContent = ({ Courses }) => {
+	return Courses?.map((course, idx) => (
+		<CourseCard key={idx} course={course} type={"primary"} />
+	));
 };
 
 export default DraftContent;

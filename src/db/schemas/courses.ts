@@ -1,57 +1,61 @@
 import {
-  text,
-  boolean,
-  varchar,
-  uuid,
-  decimal,
-  timestamp,
-  pgTable,
-  json,
+	text,
+	boolean,
+	varchar,
+	uuid,
+	decimal,
+	timestamp,
+	pgTable,
+	jsonb,
 } from "drizzle-orm/pg-core";
 import { InferSelectModel, InferInsertModel, sql } from "drizzle-orm";
-import { user } from "./user";
-import { foreignKey } from "drizzle-orm/mysql-core";
-import { certification } from "./certification";
+import { User } from "./User";
 
-export const courses = pgTable("courses", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Actual price
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
-  lesson: varchar("lesson", { length: 100 }).notNull(),
-  duration: varchar("duration", { length: 100 }).notNull(),
-  featured: boolean("featured").default(false),
-  estimatedPrice: decimal("estimatedPrice", { precision: 10, scale: 2 }), // Original price before discount
-  isFree: boolean("isFree").default(false),
-  tag: varchar("tag", { length: 100 }).notNull(),
-  skillLevel: varchar("skillLevel", { length: 100 }).notNull(),
-  categories: json("categories").default(sql`('[]')`).notNull(),
-  insName: varchar("insName", { length: 255 }).notNull(),
-  thumbnail: text("thumbnail"), // Store as base64 string
-  createdAt: timestamp("createdAt").defaultNow().notNull(), // Track when the category was created
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(), // Track when the course was last updated
-  userId: uuid("userId").references(() => user.id).notNull(),
-  demoVideoUrl: varchar("demoVideoUrl", { length: 500 }), // URL link for the demo video
-  isPublished: boolean("isPublished").default(false), // New field to indicate if the course is published or in draft mode
-  enrolledCount: decimal("enrolledCount", { precision: 10, scale: 0 })
-    .default("0")
-    .notNull(),
-  discount: decimal("discount", { precision: 10, scale: 2 })
-    .default("0")
-    .notNull(),
-  extras: json("extras")
-    .default(sql`'{}'`)
-    .notNull(), // JSON to store extra course information
-  // New field to store reviews as JSON
-  reviews: json("reviews")
-    .default(sql`'[]'`) // Default to an empty array of reviews
-    .notNull(),
-  comments: json("comments")
-    .default(sql`'[]'`)
-    .notNull(),
-  certificateId: uuid("certificateId"),
+// _Courses_
+export const Courses = pgTable("Courses", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	title: varchar("title", { length: 255 }).notNull(),
+	description: text("description"),
+	price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+	slug: varchar("slug", { length: 255 }).notNull().unique(),
+	lesson: varchar("lesson", { length: 100 }).notNull(),
+	duration: varchar("duration", { length: 100 }).notNull(),
+	featured: boolean("featured").default(false).notNull(),
+	estimated_price: decimal("estimated_price", { precision: 10, scale: 2 }),
+	is_free: boolean("is_free").default(false).notNull(),
+	tag: varchar("tag", { length: 100 }).notNull(),
+	skill_level: varchar("skill_level", { length: 100 }).notNull(),
+	categories: jsonb("categories")
+		.default(sql`'[]'::jsonb`)
+		.notNull(),
+	instructor_name: varchar("instructor_name", { length: 255 }).notNull(),
+	thumbnail: text("thumbnail"),
+	created_at: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updated_at: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	user_id: uuid("user_id")
+		.references(() => User.id, { onDelete: "cascade" })
+		.notNull(),
+	demo_video_url: varchar("demo_video_url", { length: 500 }),
+	is_published: boolean("is_published").default(false).notNull(),
+	enrolled_count: integer("enrolled_count").default(0).notNull(),
+	discount: decimal("discount", { precision: 10, scale: 2 })
+		.default("0")
+		.notNull(),
+	extras: jsonb("extras")
+		.default(sql`'{}'::jsonb`)
+		.notNull(),
+	reviews: jsonb("reviews")
+		.default(sql`'[]'::jsonb`)
+		.notNull(),
+	comments: jsonb("comments")
+		.default(sql`'[]'::jsonb`)
+		.notNull(),
+	certificate_id: uuid("certificate_id"),
 });
 
-export type Course = InferSelectModel<typeof courses>;
-export type CourseInsert = InferInsertModel<typeof courses>;
+export type Course = InferSelectModel<typeof Courses>;
+export type CourseInsert = InferInsertModel<typeof Courses>;

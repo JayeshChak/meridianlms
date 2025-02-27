@@ -1,85 +1,98 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db"; // Adjust the path to your database connection
-import { lectures } from "@/db/schemas/lectures"; // Adjust path as necessary
+import { Lectures } from "@/db/schemas/Lectures"; // Adjust path as necessary
 import { eq, sql } from "drizzle-orm";
-import { chapters } from "@/db/schemas/courseChapters";
-import { courses } from "@/db/schemas/courses";
+import { Chapters } from "@/db/schemas/Chapters";
+import { Courses } from "@/db/schemas/Courses";
 
 // Utility function to convert minutes to hours
 const convertMinutesToHours = (totalMinutes: number) => {
-  return (totalMinutes / 60).toFixed(2) + ' hours';
+	return (totalMinutes / 60).toFixed(2) + " hours";
 };
 
 // Update course duration based on chapter durations
-const updateCourseDuration = async (courseId: string) => {
-  const totalDurationInMinutes = await db
-    .select({ totalDuration: sql`SUM(CAST(SPLIT_PART(chapters.duration, ' ', 1) AS int))` })
-    .from(chapters)
-    .where(eq(chapters.courseId, courseId))
-    .then((res) => res[0]?.totalDuration || 0);
+const updateCourseDuration = async (course_id: string) => {
+	const totalDurationInMinutes = await db
+		.select({
+			totalDuration: sql`SUM(CAST(SPLIT_PART(Chapters.duration, ' ', 1) AS int))`,
+		})
+		.from(Chapters)
+		.where(eq(Chapters.course_id, course_id))
+		.then((res) => res[0]?.totalDuration || 0);
 
-  const newCourseDuration = convertMinutesToHours(totalDurationInMinutes);
+	const newCourseDuration = convertMinutesToHours(totalDurationInMinutes);
 
-  await db
-    .update(courses)
-    .set({ duration: newCourseDuration })
-    .where(eq(courses.id, courseId))
-    .returning();
+	await db
+		.update(Courses)
+		.set({ duration: newCourseDuration })
+		.where(eq(Courses.id, course_id))
+		.returning();
 };
 
 // Update chapter duration based on lecture durations
-const updateChapterDuration = async (chapterId: string) => {
-  const totalDurationInMinutes = await db
-    .select({ totalDuration: sql`SUM(CAST(lectures.duration AS int))` })
-    .from(lectures)
-    .where(eq(lectures.chapterId, chapterId))
-    .then((res) => res[0]?.totalDuration || 0);
+const updateChapterDuration = async (chapter_id: string) => {
+	const totalDurationInMinutes = await db
+		.select({ totalDuration: sql`SUM(CAST(Lectures.duration AS int))` })
+		.from(Lectures)
+		.where(eq(Lectures.chapter_id, chapter_id))
+		.then((res) => res[0]?.totalDuration || 0);
 
-  const updatedChapter = await db
-    .update(chapters)
-    .set({ duration: `${totalDurationInMinutes} minutes` })
-    .where(eq(chapters.id, chapterId))
-    .returning();
+	const updatedChapter = await db
+		.update(Chapters)
+		.set({ duration: `${totalDurationInMinutes} minutes` })
+		.where(eq(Chapters.id, chapter_id))
+		.returning();
 
-  return updatedChapter[0]?.courseId;
+	return updatedChapter[0]?.course_id;
 };
 
 // Delete a lecture by ID and update durations accordingly
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const lectureId = params.id;
+export async function DELETE(
+	req: NextRequest,
+	{ params }: { params: { id: string } }
+) {
+	const lectureId = params.id;
 
-  try {
-    if (!lectureId) {
-      return NextResponse.json({ message: "Lecture ID is required." }, { status: 400 });
-    }
+	try {
+		if (!lectureId) {
+			return NextResponse.json(
+				{ message: "Lecture ID is required." },
+				{ status: 400 }
+			);
+		}
 
-    const lecture = await db
-      .select()
-      .from(lectures)
-      .where(eq(lectures.id, lectureId))
-      .then((res) => res[0]);
+		const lecture = await db
+			.select()
+			.from(Lectures)
+			.where(eq(Lectures.id, lectureId))
+			.then((res) => res[0]);
 
-    if (!lecture) {
-      return NextResponse.json({ message: "Lecture not found." }, { status: 404 });
-    }
+		if (!lecture) {
+			return NextResponse.json(
+				{ message: "Lecture not found." },
+				{ status: 404 }
+			);
+		}
 
-    await db
-      .delete(lectures)
-      .where(eq(lectures.id, lectureId))
-      .returning();
+		await db.delete(Lectures).where(eq(Lectures.id, lectureId)).returning();
 
-    // Update chapter and course durations
-    const courseId = await updateChapterDuration(lecture.chapterId);
-    if (courseId) {
-      await updateCourseDuration(courseId);
-    }
+		// Update chapter and course durations
+		const course_id = await updateChapterDuration(lecture.chapter_id);
+		if (course_id) {
+			await updateCourseDuration(course_id);
+		}
 
-    return NextResponse.json({ message: "Lecture deleted successfully." }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ message: "Error deleting lecture.", error: error.message }, { status: 500 });
-  }
+		return NextResponse.json(
+			{ message: "Lecture deleted successfully." },
+			{ status: 200 }
+		);
+	} catch (error) {
+		return NextResponse.json(
+			{ message: "Error deleting lecture.", error: error.message },
+			{ status: 500 }
+		);
+	}
 }
-
 
 // Update a lecture by ID
 // export async function PATCH(
@@ -90,7 +103,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 //   try {
 //     const body = await req.json();
-//     const { title, description, duration, videoUrl, isPreview, order } = body;
+//     const { title, description, duration, video_url, is_preview, order } = body;
 
 //     // Validate the lecture ID
 //     if (!lectureId) {
@@ -104,9 +117,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 //     if (
 //       !title &&
 //       !duration &&
-//       !videoUrl &&
+//       !video_url &&
 //       !description &&
-//       isPreview === undefined &&
+//       is_preview === undefined &&
 //       !order
 //     ) {
 //       return NextResponse.json(
@@ -120,15 +133,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 //     if (title) updateData.title = title;
 //     if (description !== undefined) updateData.description = description;
 //     if (duration) updateData.duration = duration;
-//     if (videoUrl) updateData.videoUrl = videoUrl;
-//     if (isPreview !== undefined) updateData.isPreview = isPreview;
+//     if (video_url) updateData.video_url = video_url;
+//     if (is_preview !== undefined) updateData.is_preview = is_preview;
 //     if (order) updateData.order = order;
 
 //     // Update the lecture in the database
 //     const updatedLecture = await db
-//       .update(lectures)
+//       .update(Lectures)
 //       .set(updateData)
-//       .where(eq(lectures.id, lectureId))
+//       .where(eq(Lectures.id, lectureId))
 //       .returning();
 
 //     if (!updatedLecture) {
@@ -150,78 +163,83 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 //   }
 // }
 
-
 // Update a lecture by ID and update durations accordingly
 export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+	req: NextRequest,
+	{ params }: { params: { id: string } }
 ) {
-  const lectureId = params.id;
+	const lectureId = params.id;
 
-  try {
-    const body = await req.json();
-    const { title, description, duration, videoUrl, isPreview, order } = body;
+	try {
+		const body = await req.json();
+		const { title, description, duration, video_url, is_preview, order } =
+			body;
 
-    // Validate the lecture ID
-    if (!lectureId) {
-      return NextResponse.json(
-        { message: "Lecture ID is required." },
-        { status: 400 }
-      );
-    }
+		// Validate the lecture ID
+		if (!lectureId) {
+			return NextResponse.json(
+				{ message: "Lecture ID is required." },
+				{ status: 400 }
+			);
+		}
 
-    // Validate required fields if they need to be updated
-    if (
-      !title &&
-      !duration &&
-      !videoUrl &&
-      !description &&
-      isPreview === undefined &&
-      !order
-    ) {
-      return NextResponse.json(
-        { message: "At least one field is required to update." },
-        { status: 400 }
-      );
-    }
+		// Validate required fields if they need to be updated
+		if (
+			!title &&
+			!duration &&
+			!video_url &&
+			!description &&
+			is_preview === undefined &&
+			!order
+		) {
+			return NextResponse.json(
+				{ message: "At least one field is required to update." },
+				{ status: 400 }
+			);
+		}
 
-    // Prepare the update data
-    const updateData: any = {};
-    if (title) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
-    if (duration) updateData.duration = duration;
-    if (videoUrl) updateData.videoUrl = videoUrl;
-    if (isPreview !== undefined) updateData.isPreview = isPreview;
-    if (order) updateData.order = order;
+		// Prepare the update data
+		const updateData: any = {};
+		if (title) updateData.title = title;
+		if (description !== undefined) updateData.description = description;
+		if (duration) updateData.duration = duration;
+		if (video_url) updateData.video_url = video_url;
+		if (is_preview !== undefined) updateData.is_preview = is_preview;
+		if (order) updateData.order = order;
 
-    // Update the lecture in the database
-    const updatedLecture = await db
-      .update(lectures)
-      .set(updateData)
-      .where(eq(lectures.id, lectureId))
-      .returning();
+		// Update the lecture in the database
+		const updatedLecture = await db
+			.update(Lectures)
+			.set(updateData)
+			.where(eq(Lectures.id, lectureId))
+			.returning();
 
-    if (!updatedLecture.length) {
-      return NextResponse.json(
-        { message: "Lecture not found." },
-        { status: 404 }
-      );
-    }
+		if (!updatedLecture.length) {
+			return NextResponse.json(
+				{ message: "Lecture not found." },
+				{ status: 404 }
+			);
+		}
 
-    // Update chapter and course durations
-    const courseId = await updateChapterDuration(updatedLecture[0].chapterId);
-    if (courseId) {
-      await updateCourseDuration(courseId);
-    }
+		// Update chapter and course durations
+		const course_id = await updateChapterDuration(
+			updatedLecture[0].chapter_id
+		);
+		if (course_id) {
+			await updateCourseDuration(course_id);
+		}
 
-    return NextResponse.json(
-      { message: "Lecture updated successfully.", lecture: updatedLecture },
-      { status: 200 }
-    );
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Error updating lecture.", error: error.message },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(
+			{
+				message: "Lecture updated successfully.",
+				lecture: updatedLecture,
+			},
+			{ status: 200 }
+		);
+	} catch (error) {
+		return NextResponse.json(
+			{ message: "Error updating lecture.", error: error.message },
+			{ status: 500 }
+		);
+	}
 }

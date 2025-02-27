@@ -1,3 +1,5 @@
+"use client";
+
 import LessonQuizMain from "@/components/layout/main/LessonQuizMain";
 import ThemeController from "@/components/shared/others/ThemeController";
 import PageWrapper from "@/components/shared/wrappers/PageWrapper";

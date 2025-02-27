@@ -6,33 +6,33 @@ import {
 	jsonb,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { user } from "./user";
-import { questionnaires } from "./questionnaire";
+import { User } from "./User";
+import { Questionnaires } from "./Questionnaires";
 
-export const quizAttempts = pgTable("quiz_attempts", {
+export const QuizAttempts = pgTable("QuizAttempts", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	user_id: uuid("user_id")
-		.notNull()
-		.references(() => user.id, {
+		.references(() => User.id, {
 			onUpdate: "cascade",
 			onDelete: "cascade",
-		}),
+		})
+		.notNull(),
 	questionnaire_id: uuid("questionnaire_id")
-		.notNull()
-		.references(() => questionnaires.id, {
+		.references(() => Questionnaires.id, {
 			onUpdate: "cascade",
 			onDelete: "cascade",
-		}),
+		})
+		.notNull(),
 	score: integer("score").notNull(),
-	answers: jsonb("answers").notNull(), // Store answers as JSON
-	created_at: timestamp("created_at", { mode: "string" })
+	answers: jsonb("answers").notNull(),
+	created_at: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),
-	updated_at: timestamp("updated_at", { mode: "string" })
+	updated_at: timestamp("updated_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),
 });
 
 // Types for TypeScript
-export type QuizAttempt = typeof quizAttempts.$inferSelect;
-export type NewQuizAttempt = typeof quizAttempts.$inferInsert;
+export type QuizAttempt = typeof QuizAttempts.$inferSelect;
+export type NewQuizAttempt = typeof QuizAttempts.$inferInsert;

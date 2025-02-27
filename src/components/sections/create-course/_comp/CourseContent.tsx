@@ -16,7 +16,7 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 	const [title, setTitle] = useState("");
 	const [slug, setSlug] = useState("");
 	const [regularPrice, setRegularPrice] = useState("");
-	const [estimatedPrice, setEstimatedPrice] = useState("");
+	const [estimated_price, setEstimatedPrice] = useState("");
 	const [category, setCategory] = useState("");
 	const [offer, setOffer] = useState("paid");
 	const [imagePath, setImagePath] = useState("");
@@ -37,11 +37,11 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 			setTitle(initialData.title || "");
 			setSlug(initialData.slug || "");
 			setRegularPrice(initialData.price?.toString() || "");
-			setEstimatedPrice(initialData.estimatedPrice?.toString() || "");
-			setCategory(initialData.categories || "");
-			setOffer(initialData.isFree ? "Free" : "paid");
+			setEstimatedPrice(initialData.estimated_price?.toString() || "");
+			setCategory(initialData.Categories || "");
+			setOffer(initialData.is_free ? "Free" : "paid");
 			setImagePath(initialData.thumbnail || "");
-			setVideoPath(initialData.demoVideoUrl || ""); // Correctly set the initial video URL
+			setVideoPath(initialData.demo_video_url || ""); // Correctly set the initial video URL
 			setDescription(initialData.description || "");
 		}
 	}, [initialData]);
@@ -63,7 +63,7 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 		e.preventDefault();
 
 		const regularPriceValue = parseFloat(regularPrice);
-		const estimatedPriceValue = parseFloat(estimatedPrice);
+		const estimatedPriceValue = parseFloat(estimated_price);
 
 		// Validate required fields
 		if (
@@ -85,7 +85,7 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 		}
 
 		if (
-			estimatedPrice &&
+			estimated_price &&
 			(isNaN(estimatedPriceValue) || estimatedPriceValue <= 0)
 		) {
 			showAlert("error", "Please enter a valid estimated price.");
@@ -107,29 +107,29 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 			lesson: title,
 			duration: "0 hours",
 			price: regularPriceValue.toFixed(2),
-			estimatedPrice: estimatedPriceValue
+			estimated_price: estimatedPriceValue
 				? estimatedPriceValue.toFixed(2)
 				: null,
-			isFree: offer === "Free",
+			is_free: offer === "Free",
 			tag: slug,
-			skillLevel: "Beginner",
-			categories: category,
-			insName: session?.user?.name || "Unknown Instructor",
+			skill_level: "Beginner",
+			Categories: category,
+			instructor_name: session?.User?.name || "Unknown Instructor",
 			thumbnail: imagePath,
-			userId: session?.user?.id || "",
-			demoVideoUrl: videoPath, // Make sure videoPath is included
+			user_id: session?.User?.id || "",
+			demo_video_url: videoPath, // Make sure videoPath is included
 			description: description || "", // Pass rich text content
 		};
 
 		try {
 			setIsLoading(true);
 			const response = await fetch(
-				isEditMode ? `/api/courses/${initialData.id}` : "/api/courses",
+				isEditMode ? `/api/Courses/${initialData.id}` : "/api/Courses",
 				{
 					method: isEditMode ? "PATCH" : "POST",
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${session?.user?.id}`,
+						Authorization: `Bearer ${session?.User?.id}`,
 					},
 					body: JSON.stringify(courseData),
 				}
@@ -217,7 +217,7 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 							</label>
 							<input
 								type="number"
-								value={estimatedPrice}
+								value={estimated_price}
 								onChange={(e) =>
 									setEstimatedPrice(e.target.value)
 								}
@@ -247,7 +247,7 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 							</label>
 							<div className="bg-whiteColor relative rounded-md">
 								<input
-									list="categories"
+									list="Categories"
 									className="text-base bg-transparent text-blackColor2 w-full p-13px pr-30px focus:outline-none block appearance-none relative z-20 focus:shadow-select rounded-md"
 									value={category}
 									onChange={(e) =>
@@ -255,7 +255,7 @@ const CourseContent = ({ setCourseId, initialData, isEditMode = false }) => {
 									}
 									placeholder="Select or type a category"
 								/>
-								<datalist id="categories">
+								<datalist id="Categories">
 									<option value="All" />
 									<option value="Web Design" />
 									<option value="Graphic" />
@@ -339,14 +339,14 @@ export default CourseContent;
 // import "react-quill/dist/quill.snow.css"; // Import Quill styles
 
 // interface Props {
-//   setCourseId: (courseId: string) => void;
+//   setCourseId: (course_id: string) => void;
 // }
 
 // const CourseContent: React.FC<Props> = ({ setCourseId }) => {
 //   const [title, setTitle] = useState("");
 //   const [slug, setSlug] = useState("");
 //   const [regularPrice, setRegularPrice] = useState("");
-//   const [estimatedPrice, setEstimatedPrice] = useState("");
+//   const [estimated_price, setEstimatedPrice] = useState("");
 //   const [category, setCategory] = useState("");
 //   const [offer, setOffer] = useState("premium");
 //   const [imagePath, setImagePath] = useState("");
@@ -371,7 +371,7 @@ export default CourseContent;
 //     e.preventDefault();
 
 //     const regularPriceValue = parseFloat(regularPrice);
-//     const estimatedPriceValue = parseFloat(estimatedPrice);
+//     const estimatedPriceValue = parseFloat(estimated_price);
 
 //     // Validate required fields
 //     if (!title || !regularPriceValue || !description || !category || !imagePath || !videoPath) {
@@ -385,7 +385,7 @@ export default CourseContent;
 //       return;
 //     }
 
-//     if (estimatedPrice && (isNaN(estimatedPriceValue) || estimatedPriceValue <= 0)) {
+//     if (estimated_price && (isNaN(estimatedPriceValue) || estimatedPriceValue <= 0)) {
 //       showAlert("error", "Please enter a valid estimated price.");
 //       return;
 //     }
@@ -402,25 +402,25 @@ export default CourseContent;
 //       lesson: title,
 //       duration: "0 hours",
 //       price: regularPriceValue.toFixed(2),
-//       estimatedPrice: estimatedPriceValue ? estimatedPriceValue.toFixed(2) : null,
-//       isFree: offer === "Free",
+//       estimated_price: estimatedPriceValue ? estimatedPriceValue.toFixed(2) : null,
+//       is_free: offer === "Free",
 //       tag: slug,
-//       skillLevel: "Beginner",
-//       categories: category,
-//       insName: session?.user?.name || "Unknown Instructor",
+//       skill_level: "Beginner",
+//       Categories: category,
+//       instructor_name: session?.User?.name || "Unknown Instructor",
 //       thumbnail: imagePath,
-//       userId: session?.user?.id || "",
-//       demoVideoUrl: videoPath,
+//       user_id: session?.User?.id || "",
+//       demo_video_url: videoPath,
 //       description: description || "", // Pass rich text content
 //     };
 
 //     try {
 //       setIsLoading(true);
-//       const response = await fetch("/api/courses", {
+//       const response = await fetch("/api/Courses", {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
-//           Authorization: `Bearer ${session?.user?.id}`,
+//           Authorization: `Bearer ${session?.User?.id}`,
 //         },
 //         body: JSON.stringify(courseData),
 //       });
@@ -483,7 +483,7 @@ export default CourseContent;
 //               <label className="mb-3 block font-semibold">Estimated Price ($)</label>
 //               <input
 //                 type="text"
-//                 value={estimatedPrice}
+//                 value={estimated_price}
 //                 onChange={(e) => setEstimatedPrice(e.target.value)}
 //                 placeholder="Estimated Price ($)"
 //                 className="w-full py-10px px-5 text-sm focus:outline-none text-contentColor dark:text-contentColor-dark bg-whiteColor dark:bg-whiteColor-dark border-2 border-borderColor dark:border-borderColor-dark placeholder:text-placeholder placeholder:opacity-80 leading-23px rounded-md"
@@ -507,13 +507,13 @@ export default CourseContent;
 //               </label>
 //               <div className="bg-whiteColor relative rounded-md">
 //                 <input
-//                   list="categories"
+//                   list="Categories"
 //                   className="text-base bg-transparent text-blackColor2 w-full p-13px pr-30px focus:outline-none block appearance-none relative z-20 focus:shadow-select rounded-md"
 //                   value={category}
 //                   onChange={(e) => setCategory(e.target.value)}
 //                   placeholder="Select or type a category"
 //                 />
-//                 <datalist id="categories">
+//                 <datalist id="Categories">
 //                   <option value="All" />
 //                   <option value="Web Design" />
 //                   <option value="Graphic" />

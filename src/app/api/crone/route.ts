@@ -1,108 +1,126 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/db';  // Adjust the path based on your project structure
-import { courses } from '@/db/schemas/courses';
-import { chapters } from '@/db/schemas/courseChapters';
-import { lectures } from '@/db/schemas/lectures';
-
+import { NextResponse } from "next/server";
+import { db } from "@/db"; // Adjust the path based on your project structure
+import { Courses } from "@/db/schemas/Courses";
+import { Chapters } from "@/db/schemas/Chapters";
+import { Lectures } from "@/db/schemas/Lectures";
 
 // Function to handle the GET request
 export async function GET(req: Request) {
-  // Extract the query parameters
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId');  // Get userId from the query params
+	// Extract the query parameters
+	const { searchParams } = new URL(req.url);
+	const user_id = searchParams.get("user_id"); // Get user_id from the query params
 
-  // Check if userId is passed
-  if (!userId) {
-    return NextResponse.json({ error: 'userId is required as a query parameter' }, { status: 400 });
-  }
+	// Check if user_id is passed
+	if (!user_id) {
+		return NextResponse.json(
+			{ error: "user_id is required as a query parameter" },
+			{ status: 400 }
+		);
+	}
 
-  try {
-    // Insert Full Stack Developer course
-    const courseData = {
-      title: "Full Stack Engineer",
-      slug: "full-stack-engineer",
-      lesson: "Introduction to Full Stack Development",
-      duration: "50 hours",
-      description: "Comprehensive course on becoming a full stack developer",
-      featured: true,
-      price: 299.99,
-      estimatedPrice: 499.99,
-      isFree: false,
-      tag: "Full Stack",
-      skillLevel: "Intermediate",
-      categories: ['Development', 'Web', 'Full Stack'],
-      insName: "Aqeel Shahzad",
-      thumbnail: "https://res.cloudinary.com/ddj5gisb3/image/upload/v1725361134/courses/images_otkprf.jpg",
-      userId,  // Use the userId from query params
-      demoVideoUrl: "D:\\lms\\public\\uploads\\full-stack-intro.mp4",
-      isPublished: true,
-    };
+	try {
+		// Insert Full Stack Developer course
+		const courseData = {
+			title: "Full Stack Engineer",
+			slug: "full-stack-engineer",
+			lesson: "Introduction to Full Stack Development",
+			duration: "50 hours",
+			description:
+				"Comprehensive course on becoming a full stack developer",
+			featured: true,
+			price: 299.99,
+			estimated_price: 499.99,
+			is_free: false,
+			tag: "Full Stack",
+			skill_level: "Intermediate",
+			Categories: ["Development", "Web", "Full Stack"],
+			instructor_name: "Aqeel Shahzad",
+			thumbnail:
+				"https://res.cloudinary.com/ddj5gisb3/image/upload/v1725361134/Courses/images_otkprf.jpg",
+			user_id, // Use the user_id from query params
+			demo_video_url: "D:\\lms\\public\\uploads\\full-stack-intro.mp4",
+			is_published: true,
+		};
 
-    const [newCourse] = await db.insert(courses).values(courseData).returning();
-    console.log('Course inserted successfully:', newCourse);
+		const [newCourse] = await db
+			.insert(Courses)
+			.values(courseData)
+			.returning();
+		console.log("Course inserted successfully:", newCourse);
 
-    // Insert chapters for Full Stack Developer course
-    const chaptersData = [
-      {
-        courseId: newCourse.id,
-        title: "Introduction to Full Stack Development",
-        description: "Overview of Full Stack Development and its importance",
-        order: "1",
-        duration: "2 hours"
-      },
-      {
-        courseId: newCourse.id,
-        title: "Frontend Basics: HTML, CSS, JavaScript",
-        description: "Learn the fundamentals of frontend development",
-        order: "2",
-        duration: "8 hours"
-      },
-      {
-        courseId: newCourse.id,
-        title: "Backend Basics: Node.js and Express",
-        description: "Understanding backend development with Node.js and Express",
-        order: "3",
-        duration: "10 hours"
-      },
-      {
-        courseId: newCourse.id,
-        title: "Databases: SQL & NoSQL",
-        description: "Introduction to database technologies",
-        order: "4",
-        duration: "10 hours"
-      },
-      {
-        courseId: newCourse.id,
-        title: "Full Stack Project: Building a Web Application",
-        description: "Hands-on project to build a full stack web application",
-        order: "5",
-        duration: "20 hours"
-      }
-    ];
+		// Insert Chapters for Full Stack Developer course
+		const chaptersData = [
+			{
+				course_id: newCourse.id,
+				title: "Introduction to Full Stack Development",
+				description:
+					"Overview of Full Stack Development and its importance",
+				order: "1",
+				duration: "2 hours",
+			},
+			{
+				course_id: newCourse.id,
+				title: "Frontend Basics: HTML, CSS, JavaScript",
+				description: "Learn the fundamentals of frontend development",
+				order: "2",
+				duration: "8 hours",
+			},
+			{
+				course_id: newCourse.id,
+				title: "Backend Basics: Node.js and Express",
+				description:
+					"Understanding backend development with Node.js and Express",
+				order: "3",
+				duration: "10 hours",
+			},
+			{
+				course_id: newCourse.id,
+				title: "Databases: SQL & NoSQL",
+				description: "Introduction to database technologies",
+				order: "4",
+				duration: "10 hours",
+			},
+			{
+				course_id: newCourse.id,
+				title: "Full Stack Project: Building a Web Application",
+				description:
+					"Hands-on project to build a full stack web application",
+				order: "5",
+				duration: "20 hours",
+			},
+		];
 
-    const insertedChapters = await db.insert(chapters).values(chaptersData).returning();
-    console.log('Chapters inserted successfully:', insertedChapters);
+		const insertedChapters = await db
+			.insert(Chapters)
+			.values(chaptersData)
+			.returning();
+		console.log("Chapters inserted successfully:", insertedChapters);
 
-    // Insert lectures for each chapter
-    const lectureData = insertedChapters.flatMap((chapter, index) => {
-      return Array.from({ length: 5 }).map((_, i) => ({
-        chapterId: chapter.id,
-        title: `Lecture ${i + 1} for ${chapter.title}`,
-        description: `In-depth details for lecture ${i + 1} in ${chapter.title}`,
-        duration: "1 hour",
-        videoUrl: "D:\\lms\\public\\uploads\\full-stack-lecture.mp4", // Placeholder, replace with actual videos
-        isPreview: i === 0, // First lecture is a preview
-        isLocked: i !== 0, // All lectures except the first are locked
-        order: `${index + 1}.${i + 1}`,
-      }));
-    });
+		// Insert Lectures for each chapter
+		const lectureData = insertedChapters.flatMap((chapter, index) => {
+			return Array.from({ length: 5 }).map((_, i) => ({
+				chapter_id: chapter.id,
+				title: `Lecture ${i + 1} for ${chapter.title}`,
+				description: `In-depth details for lecture ${i + 1} in ${
+					chapter.title
+				}`,
+				duration: "1 hour",
+				video_url: "D:\\lms\\public\\uploads\\full-stack-lecture.mp4", // Placeholder, replace with actual videos
+				is_preview: i === 0, // First lecture is a preview
+				is_locked: i !== 0, // All Lectures except the first are locked
+				order: `${index + 1}.${i + 1}`,
+			}));
+		});
 
-    await db.insert(lectures).values(lectureData);
-    console.log('Lectures inserted successfully');
+		await db.insert(Lectures).values(lectureData);
+		console.log("Lectures inserted successfully");
 
-    return NextResponse.json({ message: 'Full Stack Developer course, chapters, and lectures inserted successfully' });
-  } catch (error) {
-    console.error('Error inserting course, chapters, and lectures:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+		return NextResponse.json({
+			message:
+				"Full Stack Developer course, Chapters, and Lectures inserted successfully",
+		});
+	} catch (error) {
+		console.error("Error inserting course, Chapters, and Lectures:", error);
+		return NextResponse.json({ error: error.message }, { status: 500 });
+	}
 }

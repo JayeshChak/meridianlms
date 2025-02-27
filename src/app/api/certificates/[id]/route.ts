@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { placeholders as placeholdersSchema } from "@/db/schemas/placeholders";
+import { Placeholders as placeholdersSchema } from "@/db/schemas/Placeholders";
 import { z } from "zod";
 import { getSession } from "@/libs/auth";
 import { eq } from "drizzle-orm";
-import { fetchCertificateDetails } from "@/actions/certification"; // Import statement
-import { certification } from "@/db/schemas/certification";
+import { fetchCertificateDetails } from "@/actions/Certification"; // Import statement
+import { Certification } from "@/db/schemas/Certification";
 
 const IdSchema = z.string().uuid();
 const PlaceholdersSchema = z.array(
@@ -15,7 +15,7 @@ const PlaceholdersSchema = z.array(
 		x: z.number(),
 		y: z.number(),
 		fontSize: z.number(),
-		isVisible: z.boolean(),
+		is_visible: z.boolean(),
 	})
 );
 
@@ -34,11 +34,11 @@ export async function PATCH(
 	}
 
 	let session = await getSession(req);
-	if (!session || !session.user) {
+	if (!session || !session.User) {
 		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 	}
 
-	const userRoles: string[] = session.user.roles || [];
+	const userRoles: string[] = session.User.roles || [];
 	const hasAccess =
 		userRoles.includes("superAdmin") ||
 		userRoles.includes("instructor") ||
@@ -62,8 +62,8 @@ export async function PATCH(
 		// ✅ Unpublish all certificates in the same course before publishing a new one
 		const certificate = await db
 			.select()
-			.from(certification)
-			.where(eq(certification.id, id))
+			.from(Certification)
+			.where(eq(Certification.id, id))
 			.execute();
 
 		if (!certificate.length) {
@@ -73,26 +73,26 @@ export async function PATCH(
 			);
 		}
 
-		// ✅ Check if the logged-in user owns this certificate
-		if (certificate[0].owner_id !== session.user.id) {
+		// ✅ Check if the logged-in User owns this certificate
+		if (certificate[0].owner_id !== session.User.id) {
 			return NextResponse.json(
 				{ message: "Unauthorized" },
 				{ status: 403 }
 			);
 		}
 
-		const courseId = certificate[0].course_id;
+		const course_id = certificate[0].course_id;
 
 		await db.transaction(async (trx) => {
 			await trx
-				.update(certification)
+				.update(Certification)
 				.set({ is_published: false })
-				.where(eq(certification.course_id, courseId));
+				.where(eq(Certification.course_id, course_id));
 
 			await trx
-				.update(certification)
+				.update(Certification)
 				.set({ is_published: true })
-				.where(eq(certification.id, id));
+				.where(eq(Certification.id, id));
 		});
 
 		return NextResponse.json(
@@ -134,14 +134,14 @@ export async function GET(
 	if (!session && process.env.NODE_ENV === "development") {
 		console.warn("No session found. Using mock session for testing.");
 		session = {
-			user: {
+			User: {
 				id: "0d78a48d-0128-4351-9aa4-394534ae31c6",
 				roles: ["superAdmin"],
 			},
 		};
 	}
 
-	if (!session || !session.user) {
+	if (!session || !session.User) {
 		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 	}
 
@@ -156,29 +156,29 @@ export async function GET(
 			);
 		}
 
-		const placeholders = await db
+		const Placeholders = await db
 			.select()
 			.from(placeholdersSchema)
 			.where(eq(placeholdersSchema.certificate_id, actualId))
 			.execute();
 
-		console.log("Fetched placeholders:", placeholders);
+		console.log("Fetched Placeholders:", Placeholders);
 
 		return NextResponse.json({
 			certificate: {
 				id: actualId,
-				ownerId: certificate.ownerId,
-				certificateData: certificate.certificateData,
+				owner_id: certificate.owner_id,
+				certificate_data_url: certificate.certificate_data_url,
 				description: certificate.description,
-				isPublished: certificate.isPublished,
-				uniqueIdentifier: certificate.uniqueIdentifier,
+				is_published: certificate.is_published,
+				unique_identifier: certificate.unique_identifier,
 				title: certificate.title,
-				expirationDate: certificate.expirationDate,
-				isRevocable: certificate.isRevocable,
+				expiration_date: certificate.expiration_date,
+				is_revocable: certificate.is_revocable,
 				metadata: certificate.metadata,
-				createdAt: certificate.createdAt,
-				updatedAt: certificate.updatedAt,
-				placeholders: placeholders,
+				created_at: certificate.created_at,
+				updated_at: certificate.updated_at,
+				Placeholders: Placeholders,
 			},
 		});
 	} catch (error) {
@@ -209,18 +209,18 @@ export async function POST(
 	if (!session && process.env.NODE_ENV === "development") {
 		console.warn("No session found. Using mock session for testing.");
 		session = {
-			user: {
+			User: {
 				id: "0d78a48d-0128-4351-9aa4-394534ae31c6",
 				roles: ["superAdmin"],
 			},
 		};
 	}
 
-	if (!session || !session.user) {
+	if (!session || !session.User) {
 		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 	}
 
-	const userRoles: string[] = session.user.roles || [];
+	const userRoles: string[] = session.User.roles || [];
 	const hasAccess =
 		userRoles.includes("superAdmin") ||
 		userRoles.includes("instructor") ||
@@ -233,12 +233,12 @@ export async function POST(
 	try {
 		const body = await req.json();
 		const placeholdersResult = PlaceholdersSchema.safeParse(
-			body.placeholders
+			body.Placeholders
 		);
 
 		if (!placeholdersResult.success) {
 			return NextResponse.json(
-				{ message: "Invalid placeholders data" },
+				{ message: "Invalid Placeholders data" },
 				{ status: 400 }
 			);
 		}
@@ -252,13 +252,13 @@ export async function POST(
 			.insertInto(placeholdersSchema)
 			.values(
 				placeholdersResult.data.map((p) => ({
-					certificateId: id,
+					certificate_id: id,
 					key: p.id,
 					value: p.value,
 					x: p.x,
 					y: p.y,
 					fontSize: p.fontSize,
-					isVisible: p.isVisible,
+					is_visible: p.is_visible,
 				}))
 			)
 			.execute();
@@ -268,9 +268,9 @@ export async function POST(
 			{ status: 200 }
 		);
 	} catch (error) {
-		console.error("Error saving placeholders:", error);
+		console.error("Error saving Placeholders:", error);
 		return NextResponse.json(
-			{ message: "Failed to save placeholders" },
+			{ message: "Failed to save Placeholders" },
 			{ status: 500 }
 		);
 	}

@@ -1,11 +1,18 @@
-import { pgTable, bigint, text } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	text,
+	timestamp,
+	time,
+	integer,
+} from "drizzle-orm/pg-core";
 
-export const meeting = pgTable('Meeting', {
-  id: bigint('id', { mode: 'number' }).primaryKey(), // Specify mode as 'number' or 'bigint'
-  title: text('title').notNull(),
-  date: text('date').notNull(),
-  duration: text('duration').notNull(),
-  startingTime: text('startingTime').notNull(),
-  speakerName: text('speakerName').notNull(),
-  department: text('department').notNull(),
+export const Meeting = pgTable("Meeting", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	title: text("title").notNull(),
+	date: timestamp("date", { withTimezone: true }).notNull(),
+	duration: integer("duration").notNull(), // Store duration in minutes for better calculations
+	starting_time: time("starting_time", { withTimezone: true }).notNull(),
+	speaker_name: text("speaker_name").notNull(),
+	department: text("department").notNull(),
 });

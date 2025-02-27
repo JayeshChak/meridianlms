@@ -1,9 +1,9 @@
-import CourseCard from "../courses/CourseCard";
+import CourseCard from "../Courses/CourseCard";
 
-const PendingContent = ({ courses }) => {
-  return courses?.map((course, idx) => (
-    <CourseCard key={idx} course={course} type={"primary"} />
-  ));
+const PendingContent = ({ Courses }) => {
+	return Courses?.map((course, idx) => (
+		<CourseCard key={idx} course={course} type={"primary"} />
+	));
 };
 
 export default PendingContent;

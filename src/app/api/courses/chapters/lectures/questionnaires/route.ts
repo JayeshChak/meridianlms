@@ -1,66 +1,75 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { lectures } from "@/db/schemas/lectures";
-import { chapters } from "@/db/schemas/courseChapters";
-import { courseQuestionnaires } from "@/db/schemas/coursequestionnaires";
-import { questionnaires } from "@/db/schemas/questionnaire";
+import { Lectures } from "@/db/schemas/Lectures";
+import { Chapters } from "@/db/schemas/Chapters";
+import { CourseQuestionnaires } from "@/db/schemas/coursequestionnaires";
+import { Questionnaires } from "@/db/schemas/questionnaire";
 import { eq } from "drizzle-orm";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+	request: Request,
+	{ params }: { params: { id: string } }
 ) {
-  try {
-    console.log("Fetching course questionnaires for lecture ID:", params.id);
+	try {
+		console.log(
+			"Fetching course Questionnaires for lecture ID:",
+			params.id
+		);
 
-    // Step 1: Get chapterId from the lectures table
-    const lecture = await db
-      .select({ chapterId: lectures.chapterId })
-      .from(lectures)
-      .where(eq(lectures.id, params.id))
-      .limit(1);
+		// Step 1: Get chapter_id from the Lectures table
+		const lecture = await db
+			.select({ chapter_id: Lectures.chapter_id })
+			.from(Lectures)
+			.where(eq(Lectures.id, params.id))
+			.limit(1);
 
-    if (!lecture || lecture.length === 0) {
-      return NextResponse.json({ error: "Lecture not found" }, { status: 404 });
-    }
+		if (!lecture || lecture.length === 0) {
+			return NextResponse.json(
+				{ error: "Lecture not found" },
+				{ status: 404 }
+			);
+		}
 
-    const chapterId = lecture[0].chapterId;
+		const chapter_id = lecture[0].chapter_id;
 
-    // Step 2: Get courseId from the chapters table
-    const chapter = await db
-      .select({ courseId: chapters.courseId })
-      .from(chapters)
-      .where(eq(chapters.id, chapterId))
-      .limit(1);
+		// Step 2: Get course_id from the Chapters table
+		const chapter = await db
+			.select({ course_id: Chapters.course_id })
+			.from(Chapters)
+			.where(eq(Chapters.id, chapter_id))
+			.limit(1);
 
-    if (!chapter || chapter.length === 0) {
-      return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
-    }
+		if (!chapter || chapter.length === 0) {
+			return NextResponse.json(
+				{ error: "Chapter not found" },
+				{ status: 404 }
+			);
+		}
 
-    const courseId = chapter[0].courseId;
+		const course_id = chapter[0].course_id;
 
-    // Step 3: Fetch all questionnaires associated with this courseId
-    const questionnairesList = await db
-      .select({
-        id: questionnaires.id,
-        title: questionnaires.title,
-      })
-      .from(courseQuestionnaires)
-      .innerJoin(
-        questionnaires,
-        eq(courseQuestionnaires.questionnaireId, questionnaires.id)
-      )
-      .where(eq(courseQuestionnaires.courseId, courseId));
+		// Step 3: Fetch all Questionnaires associated with this course_id
+		const questionnairesList = await db
+			.select({
+				id: Questionnaires.id,
+				title: Questionnaires.title,
+			})
+			.from(CourseQuestionnaires)
+			.innerJoin(
+				Questionnaires,
+				eq(CourseQuestionnaires.questionnaire_id, Questionnaires.id)
+			)
+			.where(eq(CourseQuestionnaires.course_id, course_id));
 
-    return NextResponse.json({
-      courseId,
-      questionnaires: questionnairesList,
-    });
-  } catch (error) {
-    console.error("Error fetching course questionnaires:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json({
+			course_id,
+			Questionnaires: questionnairesList,
+		});
+	} catch (error) {
+		console.error("Error fetching course Questionnaires:", error);
+		return NextResponse.json(
+			{ error: "Internal Server Error" },
+			{ status: 500 }
+		);
+	}
 }

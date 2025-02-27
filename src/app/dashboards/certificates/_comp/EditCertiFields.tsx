@@ -21,7 +21,7 @@ import DesignTab from "./DesignTab"; // Your additional design functionality
 // Types from your /types/certificates
 import type { CertificateData } from "@/types/certificates";
 
-// Local mock or shared placeholders
+// Local mock or shared Placeholders
 import { initialPlaceholders } from "@/assets/mock";
 
 // Utility for cropping (if needed)
@@ -53,7 +53,7 @@ interface APICertificate {
 		courseDuration?: string;
 		file_name: string;
 	};
-	placeholders: APIPlaceholder[];
+	Placeholders: APIPlaceholder[];
 }
 
 interface APIPlaceholder {
@@ -97,7 +97,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const [selectedCertificate, setSelectedCertificate] =
 		useState<APICertificate | null>(null);
 
-	// This holds the placeholders for the currently selected certificate
+	// This holds the Placeholders for the currently selected certificate
 	const [selectedPlaceholders, setSelectedPlaceholders] = useState<
 		UIPlaceholder[]
 	>([]);
@@ -169,8 +169,8 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 		// Store the selected certificate
 		setSelectedCertificate(found);
 
-		// Convert placeholders to our UIPlaceholder structure
-		const placeholdersForCert: UIPlaceholder[] = found.placeholders.map(
+		// Convert Placeholders to our UIPlaceholder structure
+		const placeholdersForCert: UIPlaceholder[] = found.Placeholders.map(
 			(ph) => ({
 				...ph,
 				font_size: ph.font_size ?? 16,
@@ -319,7 +319,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 				showAlert("error", "No certificate selected");
 				return;
 			}
-			// Example: we can do a PUT/PATCH to your backend with updated placeholders
+			// Example: we can do a PUT/PATCH to your backend with updated Placeholders
 			console.log(
 				"Saving changes => certificate:",
 				selectedCertificate.id
@@ -333,14 +333,14 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 		}
 	};
 
-	const togglePlaceholderVisibility = async (placeholderId, isVisible) => {
+	const togglePlaceholderVisibility = async (placeholderId, is_visible) => {
 		try {
-			const response = await fetch(`/api/placeholders/${placeholderId}`, {
+			const response = await fetch(`/api/Placeholders/${placeholderId}`, {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ is_visible: isVisible }),
+				body: JSON.stringify({ is_visible: is_visible }),
 			});
 
 			if (!response.ok) {
@@ -348,7 +348,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 			}
 
 			console.log(
-				`Placeholder ${placeholderId} visibility updated to ${isVisible}`
+				`Placeholder ${placeholderId} visibility updated to ${is_visible}`
 			);
 		} catch (error) {
 			console.error("Error updating placeholder visibility:", error);
@@ -389,7 +389,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 							onClick={() =>
 								setSelectedPlaceholders(
 									initialPlaceholders.map((ph: any) => ({
-										// Convert your initial placeholders to the same shape
+										// Convert your initial Placeholders to the same shape
 										...ph,
 										font_size: ph.font_size || 16,
 										is_visible: true,
@@ -605,7 +605,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 											}}
 											bounds="parent"
 											onStop={(e, data) => {
-												// Update local placeholders with new position
+												// Update local Placeholders with new position
 												setSelectedPlaceholders(
 													(prev) =>
 														prev.map((item) =>
@@ -682,7 +682,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 			<div className="mt-4">
 				{currentIdx === 0 && (
 					<DesignTab
-						certificateData={
+						certificate_data_url={
 							selectedCertificate
 								? {
 										// Use only the fields that exist in CertificateData
@@ -731,7 +731,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 						isEditing={isEditing}
 						instructorName={instructorName}
 						setDesignData={setDesignData}
-						placeholders={selectedPlaceholders}
+						Placeholders={selectedPlaceholders}
 						setPlaceholders={setSelectedPlaceholders}
 					/>
 				)}

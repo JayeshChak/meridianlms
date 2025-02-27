@@ -1,52 +1,59 @@
 import { useState, useEffect } from "react";
-import CourseCard from "../courses/CourseCard";
+import CourseCard from "../Courses/CourseCard";
 import { getEnrollCoursesFromIds } from "@/actions/getEnrollCourses";
 import useSweetAlert from "@/hooks/useSweetAlert";
 
-const EnrolledContent = ({ enrolledCourses }) => {
-  const [loading, setLoading] = useState(false);
-  const [courses, setCourses] = useState([]);
-  const showAlert = useSweetAlert();
+const EnrolledContent = ({ enrolled_courses }) => {
+	const [loading, setLoading] = useState(false);
+	const [Courses, setCourses] = useState([]);
+	const showAlert = useSweetAlert();
 
-  // console.log("Enrolled courses provided:courses", enrolledCourses);
+	// console.log("Enrolled Courses provided:Courses", enrolled_courses);
 
-  // Fetch enrolled courses details
-  useEffect(() => {
-    const fetchCourses = async () => {
-      if (!enrolledCourses?.length) {
-        console.warn("No enrolled courses provided.");
-        return;
-      }
+	// Fetch enrolled Courses details
+	useEffect(() => {
+		const fetchCourses = async () => {
+			if (!enrolled_courses?.length) {
+				console.warn("No enrolled Courses provided.");
+				return;
+			}
 
-      setLoading(true);
+			setLoading(true);
 
-      try {
-        // console.log("Fetching course details for:", enrolledCourses);
-        const courseDetails = await getEnrollCoursesFromIds(enrolledCourses);
-        // console.log("Fetched course details:", courseDetails);
+			try {
+				// console.log("Fetching course details for:", enrolled_courses);
+				const courseDetails = await getEnrollCoursesFromIds(
+					enrolled_courses
+				);
+				// console.log("Fetched course details:", courseDetails);
 
-        setCourses(courseDetails);
-      } catch (err) {
-        console.error("Failed to fetch courses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+				setCourses(courseDetails);
+			} catch (err) {
+				console.error("Failed to fetch Courses:", err);
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    fetchCourses();
-  }, [enrolledCourses]);
+		fetchCourses();
+	}, [enrolled_courses]);
 
-  if (loading) {
-    return <p>Loading courses...</p>;
-  }
+	if (loading) {
+		return <p>Loading Courses...</p>;
+	}
 
-  if (!courses.length) {
-    return <p>No enrolled courses found.</p>;
-  }
+	if (!Courses.length) {
+		return <p>No enrolled Courses found.</p>;
+	}
 
-  return courses.map((course, idx) => (
-    <CourseCard key={idx} course={course?.data} type={"primary"} enrolledCourses={enrolledCourses} />
-  ));
+	return Courses.map((course, idx) => (
+		<CourseCard
+			key={idx}
+			course={course?.data}
+			type={"primary"}
+			enrolled_courses={enrolled_courses}
+		/>
+	));
 };
 
 export default EnrolledContent;

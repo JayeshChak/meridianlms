@@ -4,80 +4,90 @@ import { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 
 const PieChartDashboard = () => {
-  const pieChartRef = useRef(null);
-  const [dataFetched, setDataFetched] = useState(false);
-  const [paymentMethodData, setPaymentMethodData] = useState([]);
+	const pieChartRef = useRef(null);
+	const [dataFetched, setDataFetched] = useState(false);
+	const [paymentMethodData, setPaymentMethodData] = useState([]);
 
-  // Fetch data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/dashboard/orders");
-        const result = await response.json();
+	// Fetch data from API
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await fetch("/api/dashboard/Orders");
+				const result = await response.json();
 
-        if (result?.data) {
-          setPaymentMethodData(result.data.paymentMethodData);
-          setDataFetched(true);
-        }
-      } catch (error) {
-        console.error("Error fetching chart data:", error);
-      }
-    };
+				if (result?.data) {
+					setPaymentMethodData(result.data.paymentMethodData);
+					setDataFetched(true);
+				}
+			} catch (error) {
+				console.error("Error fetching chart data:", error);
+			}
+		};
 
-    fetchData();
-  }, []);
+		fetchData();
+	}, []);
 
-  useEffect(() => {
-    if (dataFetched && pieChartRef.current) {
-      // Payment Method Pie Chart
-      const pieChart = new Chart(pieChartRef.current, {
-        type: "pie",
-        data: {
-          labels: paymentMethodData.map((item) => item.paymentMethod),
-          datasets: [
-            {
-              label: "Total Sales",
-              data: paymentMethodData.map((item) => parseFloat(item.totalSales)),
-              backgroundColor: ["#5F2DED", "#34A853", "#FBBC05", "#EA4335"],
-              hoverBackgroundColor: ["#5F2DED", "#34A853", "#FBBC05", "#EA4335"],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          cutout: "70%",
-          plugins: {
-            legend: {
-              position: "left",
-              labels: {
-                color: "rgb(255, 99, 132)", // Adjust text color for dark/light mode
-              },
-            },
-          },
-        },
-      });
+	useEffect(() => {
+		if (dataFetched && pieChartRef.current) {
+			// Payment Method Pie Chart
+			const pieChart = new Chart(pieChartRef.current, {
+				type: "pie",
+				data: {
+					labels: paymentMethodData.map(
+						(item) => item.payment_method
+					),
+					datasets: [
+						{
+							label: "Total Sales",
+							data: paymentMethodData.map((item) =>
+								parseFloat(item.totalSales)
+							),
+							backgroundColor: [
+								"#5F2DED",
+								"#34A853",
+								"#FBBC05",
+								"#EA4335",
+							],
+							hoverBackgroundColor: [
+								"#5F2DED",
+								"#34A853",
+								"#FBBC05",
+								"#EA4335",
+							],
+						},
+					],
+				},
+				options: {
+					responsive: true,
+					cutout: "70%",
+					plugins: {
+						legend: {
+							position: "left",
+							labels: {
+								color: "rgb(255, 99, 132)", // Adjust text color for dark/light mode
+							},
+						},
+					},
+				},
+			});
 
-      return () => {
-        pieChart.destroy();
-      };
-    }
-  }, [dataFetched]);
+			return () => {
+				pieChart.destroy();
+			};
+		}
+	}, [dataFetched, paymentMethodData]);
 
-  return (
-    <div className="w-full md:w-1/2 lg:w-1/3 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-black dark:text-white mb-4">
-        Payment Method Distribution
-      </h2>
-      <canvas ref={pieChartRef} />
-    </div>
-  );
+	return (
+		<div className="w-full md:w-1/2 lg:w-1/3 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+			<h2 className="text-2xl font-bold text-black dark:text-white mb-4">
+				Payment Method Distribution
+			</h2>
+			<canvas ref={pieChartRef} />
+		</div>
+	);
 };
 
 export default PieChartDashboard;
-
-
-
-
 
 // "use client";
 

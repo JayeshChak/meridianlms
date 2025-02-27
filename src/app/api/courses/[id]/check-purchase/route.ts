@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/libs/auth";
 import { db } from "@/db";
-import { user } from "@/db/schemas/user";
+import { User } from "@/db/schemas/User";
 import { eq } from "drizzle-orm";
 
 export async function GET(
@@ -10,23 +10,23 @@ export async function GET(
 ) {
 	try {
 		const session = await getSession(req);
-		if (!session?.user) {
+		if (!session?.User) {
 			return NextResponse.json({ hasPurchased: false }, { status: 401 });
 		}
 
-		const courseId = params.id;
-		console.log("Checking purchase for courseId:", courseId);
+		const course_id = params.id;
+		console.log("Checking purchase for course_id:", course_id);
 
-		// Fetch user's roles and enrolled courses
+		// Fetch User's roles and enrolled Courses
 		const [userData] = await db
 			.select({
-				roles: user.roles,
-				enrolledCourses: user.enrolledCourses,
+				roles: User.roles,
+				enrolled_courses: User.enrolled_courses,
 			})
-			.from(user)
-			.where(eq(user.id, session.user.id));
+			.from(User)
+			.where(eq(User.id, session.User.id));
 
-		console.log("User enrolled courses:", userData?.enrolledCourses);
+		console.log("User enrolled Courses:", userData?.enrolled_courses);
 
 		// Allow superAdmin and admin to access the certificate, but not all users
 		if (
@@ -37,18 +37,18 @@ export async function GET(
 			return NextResponse.json({ hasPurchased: true });
 		}
 
-		// Ensure `enrolledCourses` exists and is an array
+		// Ensure `enrolled_courses` exists and is an array
 		if (
-			!Array.isArray(userData?.enrolledCourses) ||
-			userData.enrolledCourses.length === 0
+			!Array.isArray(userData?.enrolled_courses) ||
+			userData.enrolled_courses.length === 0
 		) {
-			console.log("No enrolled courses found");
+			console.log("No enrolled Courses found");
 			return NextResponse.json({ hasPurchased: false });
 		}
 
-		// Check if user has purchased this specific course
-		const hasPurchased = userData.enrolledCourses.some(
-			(course: { id: string }) => course.id === courseId
+		// Check if User has purchased this specific course
+		const hasPurchased = userData.enrolled_courses.some(
+			(course: { id: string }) => course.id === course_id
 		);
 
 		console.log("Purchase check result:", hasPurchased);

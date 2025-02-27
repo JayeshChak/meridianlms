@@ -3,62 +3,62 @@ CREATE TABLE IF NOT EXISTS "Blog" (
 	"title" text NOT NULL,
 	"desc" text NOT NULL,
 	"date" text NOT NULL,
-	"publishDate" text NOT NULL,
+	"publish_date" text NOT NULL,
 	"month" text NOT NULL,
-	"authorName" text NOT NULL
+	"author_name" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "cart" (
+CREATE TABLE IF NOT EXISTS "Cart" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
-	"courseId" uuid NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL
+	"user_id" uuid NOT NULL,
+	"course_id" uuid NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Categories" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
 	"description" text,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "CertificateIssuance" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"certificateId" uuid NOT NULL,
-	"issuedBy" uuid NOT NULL,
-	"issuedTo" uuid NOT NULL,
+	"certificate_id" uuid NOT NULL,
+	"issued_by" uuid NOT NULL,
+	"issued_to" uuid NOT NULL,
 	"signature" text,
 	"description" text,
-	"issuanceUniqueIdentifier" text NOT NULL,
-	"isRevoked" boolean DEFAULT false NOT NULL,
-	"revocationReason" text,
-	"isExpired" boolean DEFAULT false NOT NULL,
-	"expirationDate" timestamp,
-	"issuedAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "CertificateIssuance_issuanceUniqueIdentifier_unique" UNIQUE("issuanceUniqueIdentifier")
+	"issuance_unique_identifier" text NOT NULL,
+	"is_revoked" boolean DEFAULT false NOT NULL,
+	"revocation_reason" text,
+	"is_expired" boolean DEFAULT false NOT NULL,
+	"expiration_date" timestamp,
+	"issued_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "CertificateIssuance_issuanceUniqueIdentifier_unique" UNIQUE("issuance_unique_identifier")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "CertificateTracking" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"certificateId" uuid NOT NULL,
-	"verificationCode" text NOT NULL,
-	"holderName" text NOT NULL,
-	"issueDate" timestamp NOT NULL,
-	"expiryDate" timestamp,
-	"lastVerifiedAt" timestamp,
+	"certificate_id" uuid NOT NULL,
+	"verification_code" text NOT NULL,
+	"holder_name" text NOT NULL,
+	"issue_date" timestamp NOT NULL,
+	"expiry_date" timestamp,
+	"last_verified_at" timestamp,
 	"status" text NOT NULL,
 	"grade" text,
 	"score" text,
-	"digitalSignature" text,
-	"verificationHistory" text,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "CertificateTracking_verificationCode_unique" UNIQUE("verificationCode")
+	"digital_signature" text,
+	"verification_history" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "CertificateTracking_verificationCode_unique" UNIQUE("verification_code")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "certification" (
+CREATE TABLE IF NOT EXISTS "Certification" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" uuid NOT NULL,
 	"certificate_data_url" text NOT NULL,
@@ -80,12 +80,12 @@ CREATE TABLE IF NOT EXISTS "certification" (
 	CONSTRAINT "Certification_uniqueIdentifier_unique" UNIQUE("unique_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "chapters" (
+CREATE TABLE IF NOT EXISTS "Chapters" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"courseId" uuid NOT NULL,
+	"course_id" uuid NOT NULL,
 	"title" varchar(255) NOT NULL,
 	"description" text,
-	"questionnaireId" uuid,
+	"questionnaire_id" uuid,
 	"order" varchar(50),
 	"duration" varchar(100) NOT NULL
 );
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS "course_questionnaires" (
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "courses" (
+CREATE TABLE IF NOT EXISTS "Courses" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" varchar(255) NOT NULL,
 	"description" text,
@@ -107,24 +107,24 @@ CREATE TABLE IF NOT EXISTS "courses" (
 	"lesson" varchar(100) NOT NULL,
 	"duration" varchar(100) NOT NULL,
 	"featured" boolean DEFAULT false,
-	"estimatedPrice" numeric(10, 2),
-	"isFree" boolean DEFAULT false,
+	"estimated_price" numeric(10, 2),
+	"is_free" boolean DEFAULT false,
 	"tag" varchar(100) NOT NULL,
-	"skillLevel" varchar(100) NOT NULL,
-	"categories" json DEFAULT ('[]') NOT NULL,
-	"insName" varchar(255) NOT NULL,
+	"skill_level" varchar(100) NOT NULL,
+	"Categories" json DEFAULT ('[]') NOT NULL,
+	"instructor_name" varchar(255) NOT NULL,
 	"thumbnail" text,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
-	"userId" uuid NOT NULL,
-	"demoVideoUrl" varchar(500),
-	"isPublished" boolean DEFAULT false,
-	"enrolledCount" numeric(10, 0) DEFAULT '0' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"demo_video_url" varchar(500),
+	"is_published" boolean DEFAULT false,
+	"enrolled_count" numeric(10, 0) DEFAULT '0' NOT NULL,
 	"discount" numeric(10, 2) DEFAULT '0' NOT NULL,
 	"extras" json DEFAULT '{}' NOT NULL,
 	"reviews" json DEFAULT '[]' NOT NULL,
 	"comments" json DEFAULT '[]' NOT NULL,
-	"certificateId" uuid,
+	"certificate_id" uuid,
 	CONSTRAINT "courses_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
@@ -140,32 +140,32 @@ CREATE TABLE IF NOT EXISTS "files" (
 	"name" varchar(255),
 	"path" varchar(255),
 	"size" integer,
-	"courseId" uuid
+	"course_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "InstructorApplications" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
-	"instructorBio" text DEFAULT '',
+	"user_id" uuid NOT NULL,
+	"instructor_bio" text DEFAULT '',
 	"qualifications" json DEFAULT '[]' NOT NULL,
 	"status" text DEFAULT 'pending' NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "lectures" (
+CREATE TABLE IF NOT EXISTS "Lectures" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"chapterId" uuid NOT NULL,
+	"chapter_id" uuid NOT NULL,
 	"title" varchar(255) NOT NULL,
 	"description" text,
 	"duration" varchar(100) NOT NULL,
-	"videoUrl" varchar(500) NOT NULL,
-	"isPreview" boolean DEFAULT false,
-	"isLocked" boolean DEFAULT true,
+	"video_url" varchar(500) NOT NULL,
+	"is_preview" boolean DEFAULT false,
+	"is_locked" boolean DEFAULT true,
 	"order" varchar(50)
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "managecertificates" (
+CREATE TABLE IF NOT EXISTS "ManageCertificates" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"description" text NOT NULL,
@@ -181,23 +181,23 @@ CREATE TABLE IF NOT EXISTS "Meeting" (
 	"title" text NOT NULL,
 	"date" text NOT NULL,
 	"duration" text NOT NULL,
-	"startingTime" text NOT NULL,
-	"speakerName" text NOT NULL,
+	"starting_time" text NOT NULL,
+	"speaker_name" text NOT NULL,
 	"department" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Orders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
 	"status" text NOT NULL,
-	"totalAmount" numeric(10, 2) NOT NULL,
-	"paymentMethod" text NOT NULL,
+	"total_amount" numeric(10, 2) NOT NULL,
+	"payment_method" text NOT NULL,
 	"items" json NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "placeholders" (
+CREATE TABLE IF NOT EXISTS "Placeholders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"certificate_id" uuid NOT NULL,
 	"key" text NOT NULL,
@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS "placeholders" (
 	"value" text DEFAULT 'PlaceHolderValue' NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "questionnaires" (
+CREATE TABLE IF NOT EXISTS "Questionnaires" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
 	"course_id" uuid NOT NULL,
@@ -244,45 +244,45 @@ CREATE TABLE IF NOT EXISTS "quiz_attempts" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "User" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"uniqueIdentifier" text NOT NULL,
+	"unique_identifier" text NOT NULL,
 	"name" text NOT NULL,
 	"username" text,
 	"phone" text,
 	"email" text NOT NULL,
 	"password" text NOT NULL,
-	"emailVerified" timestamp,
+	"email_verified" timestamp,
 	"image" text,
-	"roles" json DEFAULT '["user"]'::json NOT NULL,
-	"enrolledCourses" json DEFAULT '[]'::json NOT NULL,
+	"roles" json DEFAULT '["User"]'::json NOT NULL,
+	"enrolled_courses" json DEFAULT '[]'::json NOT NULL,
 	"wishlist" json DEFAULT '[]'::json NOT NULL,
-	"isVerified" boolean DEFAULT false NOT NULL,
-	"activationToken" text,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
-	"instructorBio" text DEFAULT '',
+	"is_verified" boolean DEFAULT false NOT NULL,
+	"activation_token" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"instructor_bio" text DEFAULT '',
 	"qualifications" json DEFAULT '[]'::json NOT NULL,
-	CONSTRAINT "User_uniqueIdentifier_unique" UNIQUE("uniqueIdentifier"),
+	CONSTRAINT "User_uniqueIdentifier_unique" UNIQUE("unique_identifier"),
 	CONSTRAINT "User_username_unique" UNIQUE("username"),
 	CONSTRAINT "User_phone_unique" UNIQUE("phone"),
 	CONSTRAINT "User_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "UserCategories" (
-	"userId" uuid NOT NULL,
-	"categoryId" uuid NOT NULL
+	"user_id" uuid NOT NULL,
+	"category_id" uuid NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "userDetails" (
+CREATE TABLE IF NOT EXISTS "UserDetails" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
 	"biography" text,
 	"expertise" text[] DEFAULT '{}'::text[] NOT NULL,
-	"registrationDate" timestamp DEFAULT now() NOT NULL
+	"registration_date" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "UserSocials" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"userId" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
 	"facebook" text DEFAULT '' NOT NULL,
 	"twitter" text DEFAULT '' NOT NULL,
 	"linkedin" text DEFAULT '' NOT NULL,
@@ -298,133 +298,133 @@ CREATE TABLE IF NOT EXISTS "VerificationToken" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "cart" ADD CONSTRAINT "cart_userId_User_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "Cart" ADD CONSTRAINT "cart_userId_User_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "cart" ADD CONSTRAINT "cart_courseId_courses_id_fk" FOREIGN KEY ("courseId") REFERENCES "public"."courses"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "Cart" ADD CONSTRAINT "cart_courseId_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "CertificateIssuance" ADD CONSTRAINT "CertificateIssuance_certificateId_certification_id_fk" FOREIGN KEY ("certificateId") REFERENCES "public"."certification"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "CertificateIssuance" ADD CONSTRAINT "CertificateIssuance_certificateId_certification_id_fk" FOREIGN KEY ("certificate_id") REFERENCES "public"."Certification"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "CertificateIssuance" ADD CONSTRAINT "CertificateIssuance_issuedBy_User_id_fk" FOREIGN KEY ("issuedBy") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "CertificateIssuance" ADD CONSTRAINT "CertificateIssuance_issuedBy_User_id_fk" FOREIGN KEY ("issued_by") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "CertificateIssuance" ADD CONSTRAINT "CertificateIssuance_issuedTo_User_id_fk" FOREIGN KEY ("issuedTo") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "CertificateIssuance" ADD CONSTRAINT "CertificateIssuance_issuedTo_User_id_fk" FOREIGN KEY ("issued_to") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "CertificateTracking" ADD CONSTRAINT "CertificateTracking_certificateId_certification_id_fk" FOREIGN KEY ("certificateId") REFERENCES "public"."certification"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "CertificateTracking" ADD CONSTRAINT "CertificateTracking_certificateId_certification_id_fk" FOREIGN KEY ("certificate_id") REFERENCES "public"."Certification"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "certification" ADD CONSTRAINT "certification_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "Certification" ADD CONSTRAINT "certification_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "certification" ADD CONSTRAINT "Certification_ownerId_User_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "Certification" ADD CONSTRAINT "Certification_ownerId_User_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "chapters" ADD CONSTRAINT "chapters_courseId_courses_id_fk" FOREIGN KEY ("courseId") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "Chapters" ADD CONSTRAINT "chapters_courseId_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "course_questionnaires" ADD CONSTRAINT "course_questionnaires_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "course_questionnaires" ADD CONSTRAINT "course_questionnaires_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "course_questionnaires" ADD CONSTRAINT "course_questionnaires_questionnaire_id_questionnaires_id_fk" FOREIGN KEY ("questionnaire_id") REFERENCES "public"."questionnaires"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "course_questionnaires" ADD CONSTRAINT "course_questionnaires_questionnaire_id_questionnaires_id_fk" FOREIGN KEY ("questionnaire_id") REFERENCES "public"."Questionnaires"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "courses" ADD CONSTRAINT "courses_userId_User_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "Courses" ADD CONSTRAINT "courses_userId_User_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "files" ADD CONSTRAINT "files_courseId_courses_id_fk" FOREIGN KEY ("courseId") REFERENCES "public"."courses"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "files" ADD CONSTRAINT "files_courseId_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "lectures" ADD CONSTRAINT "lectures_chapterId_chapters_id_fk" FOREIGN KEY ("chapterId") REFERENCES "public"."chapters"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "Lectures" ADD CONSTRAINT "lectures_chapterId_chapters_id_fk" FOREIGN KEY ("chapter_id") REFERENCES "public"."Chapters"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "managecertificates" ADD CONSTRAINT "managecertificates_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "ManageCertificates" ADD CONSTRAINT "managecertificates_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "managecertificates" ADD CONSTRAINT "managecertificates_courseFk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "ManageCertificates" ADD CONSTRAINT "managecertificates_courseFk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "Orders" ADD CONSTRAINT "Orders_userId_User_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "Orders" ADD CONSTRAINT "Orders_userId_User_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "placeholders" ADD CONSTRAINT "placeholders_certificate_id_certification_id_fk" FOREIGN KEY ("certificate_id") REFERENCES "public"."certification"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "Placeholders" ADD CONSTRAINT "placeholders_certificate_id_certification_id_fk" FOREIGN KEY ("certificate_id") REFERENCES "public"."Certification"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "placeholders" ADD CONSTRAINT "placeholders_certificate_id_certifications_id_fk" FOREIGN KEY ("certificate_id") REFERENCES "public"."certification"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "Placeholders" ADD CONSTRAINT "placeholders_certificate_id_certifications_id_fk" FOREIGN KEY ("certificate_id") REFERENCES "public"."Certification"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "questionnaires" ADD CONSTRAINT "questionnaires_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "Questionnaires" ADD CONSTRAINT "questionnaires_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."Courses"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "questionnaires" ADD CONSTRAINT "questionnaires_chapter_id_chapters_id_fk" FOREIGN KEY ("chapter_id") REFERENCES "public"."chapters"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "Questionnaires" ADD CONSTRAINT "questionnaires_chapter_id_chapters_id_fk" FOREIGN KEY ("chapter_id") REFERENCES "public"."Chapters"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "questions" ADD CONSTRAINT "questions_questionnaire_id_questionnaires_id_fk" FOREIGN KEY ("questionnaire_id") REFERENCES "public"."questionnaires"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "questions" ADD CONSTRAINT "questions_questionnaire_id_questionnaires_id_fk" FOREIGN KEY ("questionnaire_id") REFERENCES "public"."Questionnaires"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -436,31 +436,31 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "quiz_attempts" ADD CONSTRAINT "quiz_attempts_questionnaire_id_questionnaires_id_fk" FOREIGN KEY ("questionnaire_id") REFERENCES "public"."questionnaires"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "quiz_attempts" ADD CONSTRAINT "quiz_attempts_questionnaire_id_questionnaires_id_fk" FOREIGN KEY ("questionnaire_id") REFERENCES "public"."Questionnaires"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "UserCategories" ADD CONSTRAINT "UserCategories_userId_User_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "UserCategories" ADD CONSTRAINT "UserCategories_userId_User_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "UserCategories" ADD CONSTRAINT "UserCategories_categoryId_Categories_id_fk" FOREIGN KEY ("categoryId") REFERENCES "public"."Categories"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "UserCategories" ADD CONSTRAINT "UserCategories_categoryId_Categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."Categories"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "userDetails" ADD CONSTRAINT "userDetails_userId_User_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "UserDetails" ADD CONSTRAINT "userDetails_userId_User_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "UserSocials" ADD CONSTRAINT "UserSocials_userId_User_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "UserSocials" ADD CONSTRAINT "UserSocials_userId_User_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

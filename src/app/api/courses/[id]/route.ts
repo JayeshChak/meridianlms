@@ -1,7 +1,7 @@
 import { eq, inArray, sql } from "drizzle-orm";
-import { courses } from "@/db/schemas/courses";
-import { chapters } from "@/db/schemas/courseChapters";
-import { lectures } from "@/db/schemas/lectures";
+import { Courses } from "@/db/schemas/Courses";
+import { Chapters } from "@/db/schemas/Chapters";
+import { Lectures } from "@/db/schemas/Lectures";
 import { db } from "@/db/index";
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
@@ -19,7 +19,7 @@ export async function PUT(
 
 		// Update the course
 		await db
-			.update(courses)
+			.update(Courses)
 			.set({
 				title: body.title,
 				slug: body.slug,
@@ -27,24 +27,24 @@ export async function PUT(
 				duration: body.duration,
 				featured: body.featured,
 				price: body.price,
-				estimatedPrice: body.estimatedPrice,
-				isFree: body.isFree,
+				estimated_price: body.estimated_price,
+				is_free: body.is_free,
 				tag: body.tag,
-				skillLevel: body.skillLevel,
-				categories: body.categories,
-				insName: body.insName,
+				skill_level: body.skill_level,
+				Categories: body.Categories,
+				instructor_name: body.instructor_name,
 				thumbnail: body.thumbnail,
-				demoVideoUrl: body.demoVideoUrl,
-				isPublished: body.isPublished,
-				updatedAt: new Date(), // Update the updatedAt timestamp
+				demo_video_url: body.demo_video_url,
+				is_published: body.is_published,
+				updated_at: new Date(), // Update the updated_at timestamp
 			})
-			.where(eq(courses.id, id));
+			.where(eq(Courses.id, id));
 
 		// Fetch the updated course data
 		const updatedCourse = await db
 			.select()
-			.from(courses)
-			.where(eq(courses.id, id));
+			.from(Courses)
+			.where(eq(Courses.id, id));
 
 		return NextResponse.json({
 			message: "Course updated successfully",
@@ -66,12 +66,12 @@ export async function DELETE(
 	try {
 		const { id } = params; // Course ID
 
-		// Optional: If you want to delete related chapters and lectures
-		await db.delete(lectures).where(eq(lectures.chapterId, id));
-		await db.delete(chapters).where(eq(chapters.courseId, id));
+		// Optional: If you want to delete related Chapters and Lectures
+		await db.delete(Lectures).where(eq(Lectures.chapter_id, id));
+		await db.delete(Chapters).where(eq(Chapters.course_id, id));
 
 		// Delete the course
-		const deleteResult = await db.delete(courses).where(eq(courses.id, id));
+		const deleteResult = await db.delete(Courses).where(eq(Courses.id, id));
 
 		if (deleteResult.rowCount === 0) {
 			return NextResponse.json(
@@ -105,8 +105,8 @@ export async function PATCH(
 		// 1. Check if course exists
 		const existingCourse = await db
 			.select()
-			.from(courses)
-			.where(eq(courses.id, id))
+			.from(Courses)
+			.where(eq(Courses.id, id))
 			.limit(1);
 
 		if (!existingCourse.length) {
@@ -120,7 +120,7 @@ export async function PATCH(
 
 		// 2. Build updateFields
 		const updateFields: any = {
-			updatedAt: new Date(),
+			updated_at: new Date(),
 		};
 
 		// Assign the fields if they exist in body
@@ -131,17 +131,17 @@ export async function PATCH(
 			"duration",
 			"featured",
 			"price",
-			"estimatedPrice",
-			"isFree",
+			"estimated_price",
+			"is_free",
 			"tag",
-			"skillLevel",
-			"categories",
-			"insName",
+			"skill_level",
+			"Categories",
+			"instructor_name",
 			"thumbnail",
-			"demoVideoUrl",
-			"isPublished",
+			"demo_video_url",
+			"is_published",
 			"extras",
-			"certificateId",
+			"certificate_id",
 		];
 
 		for (const field of fieldsToCheck) {
@@ -154,9 +154,9 @@ export async function PATCH(
 
 		// 3. Perform the update
 		const updateResult = await db
-			.update(courses)
+			.update(Courses)
 			.set(updateFields)
-			.where(eq(courses.id, id))
+			.where(eq(Courses.id, id))
 			.returning();
 
 		console.log(
@@ -167,8 +167,8 @@ export async function PATCH(
 		// 4. Fetch & return updated course
 		const updatedCourse = await db
 			.select()
-			.from(courses)
-			.where(eq(courses.id, id))
+			.from(Courses)
+			.where(eq(Courses.id, id))
 			.limit(1);
 
 		console.log("✅ Course after update:", updatedCourse[0]);
@@ -196,8 +196,8 @@ export async function GET(
 		// Fetch the course by ID
 		const courseResult = await db
 			.select()
-			.from(courses)
-			.where(eq(courses.id, id))
+			.from(Courses)
+			.where(eq(Courses.id, id))
 			.limit(1);
 
 		const course = courseResult[0];
@@ -209,39 +209,39 @@ export async function GET(
 			);
 		}
 
-		// Fetch chapters related to the course ID
-		const courseChapters = await db
+		// Fetch Chapters related to the course ID
+		const Chapters = await db
 			.select()
-			.from(chapters)
-			.where(eq(chapters.courseId, id));
+			.from(Chapters)
+			.where(eq(Chapters.course_id, id));
 
-		// Extract chapter IDs to fetch related lectures
-		const chapterIds = courseChapters.map((chapter) => chapter.id);
+		// Extract chapter IDs to fetch related Lectures
+		const chapterIds = Chapters.map((chapter) => chapter.id);
 
-		// Fetch lectures related to the chapter IDs
+		// Fetch Lectures related to the chapter IDs
 		const courseLectures = await db
 			.select()
-			.from(lectures)
-			.where(inArray(lectures.chapterId, chapterIds));
+			.from(Lectures)
+			.where(inArray(Lectures.chapter_id, chapterIds));
 
-		// Calculate total lessons (number of lectures)
+		// Calculate total lessons (number of Lectures)
 		const totalLessonCount = courseLectures.length;
 
-		// Nest lectures under their respective chapters
-		const chaptersWithLectures = courseChapters.map((chapter) => {
+		// Nest Lectures under their respective Chapters
+		const chaptersWithLectures = Chapters.map((chapter) => {
 			return {
 				...chapter,
-				lectures: courseLectures.filter(
-					(lecture) => lecture.chapterId === chapter.id
+				Lectures: courseLectures.filter(
+					(lecture) => lecture.chapter_id === chapter.id
 				),
 			};
 		});
 
-		// Nest chapters under the course and add calculated fields
+		// Nest Chapters under the course and add calculated fields
 		const courseWithChapters = {
 			...course,
-			chapters: chaptersWithLectures,
-			lesson: totalLessonCount, // Total number of lectures
+			Chapters: chaptersWithLectures,
+			lesson: totalLessonCount, // Total number of Lectures
 			duration: course.duration, // Total course duration
 		};
 

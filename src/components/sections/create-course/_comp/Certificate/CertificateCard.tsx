@@ -47,7 +47,7 @@ type Certificate = {
 	orientation?: string;
 	max_download?: number;
 	is_deleted?: boolean;
-	placeholders?: CertificatePlaceHolders[];
+	Placeholders?: CertificatePlaceHolders[];
 };
 
 interface CertificateCardProps {
@@ -141,7 +141,9 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
 				</div>
 			) : (
 				<p className="mt-4 text-gray-700 dark:text-gray-300">
-					 {certificate.title ? `${certificate.title} - ${certificate.unique_identifier}` : "Untitled Certificate"}
+					{certificate.title
+						? `${certificate.title} - ${certificate.unique_identifier}`
+						: "Untitled Certificate"}
 				</p>
 			)}
 

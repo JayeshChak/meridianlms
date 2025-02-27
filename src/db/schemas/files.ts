@@ -1,11 +1,12 @@
-import { pgTable, serial, varchar, integer, uuid } from "drizzle-orm/pg-core";
-import { courses } from "./courses"; // Import the courses table for foreign key reference
+import { pgTable, uuid, varchar, integer } from "drizzle-orm/pg-core";
+import { Courses } from "./Courses";
 
-export const files = pgTable("files", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }), // Optional field, nullable by default
-  path: varchar("path", { length: 255 }), // Optional field, nullable by default
-  size: integer("size"), // Optional field, nullable by default
-  courseId: uuid("courseId").references(() => courses.id), // Foreign key to courses table, optional
-  // courseId: uuid('courseId').references(() => courses.id, {onDelete: 'cascade'}).notNull(),
+export const Files = pgTable("Files", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	name: varchar("name", { length: 255 }).notNull(),
+	path: varchar("path", { length: 255 }).notNull(),
+	size: integer("size").notNull(),
+	course_id: uuid("course_id").references(() => Courses.id, {
+		onDelete: "cascade",
+	}),
 });

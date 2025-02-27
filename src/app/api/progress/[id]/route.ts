@@ -1,26 +1,26 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { eq, and, desc, isNotNull, inArray } from "drizzle-orm";
-import { quizAttempts } from "@/db/schemas/quizAttempts";
-import { chapters } from "@/db/schemas/courseChapters";
-import { user } from "@/db/schemas/user";
+import { QuizAttempts } from "@/db/schemas/QuizAttempts";
+import { Chapters } from "@/db/schemas/Chapters";
+import { User } from "@/db/schemas/User";
 
 import { getServerSession } from "next-auth/next";
 import { options as authOptions } from "@/libs/auth";
 import { questions } from "@/db/schemas/questions";
 import { getSession } from "next-auth/react";
 
-// Dummy function to get current user id from session; adjust as needed.
+// Dummy function to get current User id from session; adjust as needed.
 async function getCurrentUserId() {
 	const session = await getServerSession(authOptions);
-	if (!session?.user?.email) {
+	if (!session?.User?.email) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	const userRecord = await db
-		.select({ id: user.id }) // Fetch only required field
-		.from(user)
-		.where(eq(user.email, session.user.email))
+		.select({ id: User.id }) // Fetch only required field
+		.from(User)
+		.where(eq(User.email, session.User.email))
 		.limit(1);
 
 	if (!userRecord.length) {
@@ -32,11 +32,11 @@ async function getCurrentUserId() {
 
 export async function GET(
 	req: Request,
-	{ params }: { params: { courseId: string } }
+	{ params }: { params: { course_id: string } }
 ) {
 	try {
-		const userId = await getCurrentUserId();
-		if (!userId) {
+		const user_id = await getCurrentUserId();
+		if (!user_id) {
 			return NextResponse.json(
 				{ error: "Unauthorized" },
 				{ status: 401 }
@@ -44,15 +44,15 @@ export async function GET(
 		}
 
 		const questionnaireIds = await db
-			.select({ questionnaireId: chapters.questionnaireId })
-			.from(chapters)
+			.select({ questionnaire_id: Chapters.questionnaire_id })
+			.from(Chapters)
 			.where(
 				and(
-					eq(chapters.courseId, params.courseId),
-					isNotNull(chapters.questionnaireId)
+					eq(Chapters.course_id, params.course_id),
+					isNotNull(Chapters.questionnaire_id)
 				)
 			)
-			.then((results) => results.map((c) => c.questionnaireId));
+			.then((results) => results.map((c) => c.questionnaire_id));
 
 		if (!questionnaireIds.length) {
 			return NextResponse.json({
@@ -65,28 +65,28 @@ export async function GET(
 		// Fetch latest attempt for each quiz
 		const latestAttempts = await db
 			.select({
-				questionnaire_id: quizAttempts.questionnaire_id,
-				score: quizAttempts.score,
+				questionnaire_id: QuizAttempts.questionnaire_id,
+				score: QuizAttempts.score,
 			})
-			.from(quizAttempts)
+			.from(QuizAttempts)
 			.where(
 				and(
-					eq(quizAttempts.user_id, userId),
-					inArray(quizAttempts.questionnaire_id, questionnaireIds)
+					eq(QuizAttempts.user_id, user_id),
+					inArray(QuizAttempts.questionnaire_id, questionnaireIds)
 				)
 			)
-			.orderBy(desc(quizAttempts.created_at))
-			.groupBy(quizAttempts.questionnaire_id); // Ensures we get the latest per quiz
+			.orderBy(desc(QuizAttempts.created_at))
+			.groupBy(QuizAttempts.questionnaire_id); // Ensures we get the latest per quiz
 
 		// Fetch total possible scores (sum of total questions per quiz)
 		const maxScores = await db
 			.select({
-				questionnaire_id: questions.questionnaireId,
+				questionnaire_id: questions.questionnaire_id,
 				count: db.fn.count(questions.id).as("total_questions"), // Uses `as()` properly
 			})
 			.from(questions)
-			.where(inArray(questions.questionnaireId, questionnaireIds))
-			.groupBy(questions.questionnaireId);
+			.where(inArray(questions.questionnaire_id, questionnaireIds))
+			.groupBy(questions.questionnaire_id);
 
 		// Calculate total scores
 		const totalScore = latestAttempts.length

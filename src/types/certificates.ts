@@ -24,7 +24,7 @@ export interface CertificateData {
 	orientation?: string;
 	max_download?: number;
 	is_deleted?: boolean;
-	placeholders?: CertificatePlaceHolders[];
+	Placeholders?: CertificatePlaceHolders[];
 }
 // src/types/certificates.ts
 export interface Certificate {
@@ -32,7 +32,7 @@ export interface Certificate {
 	owner_id?: string;
 	course_id?: string;
 	certificate_data_url?: string;
-	description?: string ; // Description of the certificate
+	description?: string; // Description of the certificate
 	is_published?: boolean; // Publication status
 	unique_identifier?: string;
 	title?: string; // Course title associated with the certificate

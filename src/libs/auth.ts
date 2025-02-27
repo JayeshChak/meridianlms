@@ -3,118 +3,125 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/db"; // Ensure this path is correct
 // import bcrypt from "bcrypt";
-import bcrypt from 'bcryptjs';
-import { user } from "@/db/schemas/user";
+import bcrypt from "bcryptjs";
+import { User } from "@/db/schemas/User";
 import { eq, sql } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { v4 as uuidv4 } from "uuid";
 
 export const options = {
-  providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_ID as string,
-      clientSecret: process.env.GOOGLE_SECRET as string,
-    }),
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials: any) {
-        const foundUser = await db
-          .select()
-          .from(user)
-          .where(eq(user.email, credentials.email))
-          .limit(1)
-          .then((res) => res[0]);
+	providers: [
+		GitHubProvider({
+			clientId: process.env.GITHUB_ID as string,
+			clientSecret: process.env.GITHUB_SECRET as string,
+		}),
+		GoogleProvider({
+			clientId: process.env.GOOGLE_ID as string,
+			clientSecret: process.env.GOOGLE_SECRET as string,
+		}),
+		CredentialsProvider({
+			name: "Credentials",
+			credentials: {
+				email: { label: "Email", type: "email" },
+				password: { label: "Password", type: "password" },
+			},
+			async authorize(credentials: any) {
+				const foundUser = await db
+					.select()
+					.from(User)
+					.where(eq(User.email, credentials.email))
+					.limit(1)
+					.then((res) => res[0]);
 
-        if (!foundUser) {
-          throw new Error("No user found with this email.");
-        }
+				if (!foundUser) {
+					throw new Error("No User found with this email.");
+				}
 
-        if (!foundUser.isVerified && foundUser.activationToken) {
-          throw new Error("Please verify your email before logging in.");
-        }
+				if (!foundUser.is_verified && foundUser.activation_token) {
+					throw new Error(
+						"Please verify your email before logging in."
+					);
+				}
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          foundUser.password
-        );
-        if (!isValid) {
-          throw new Error("Password does not match.");
-        }
+				const isValid = await bcrypt.compare(
+					credentials.password,
+					foundUser.password
+				);
+				if (!isValid) {
+					throw new Error("Password does not match.");
+				}
 
-        return foundUser;
-      },
-    }),
-  ],
-  callbacks: {
-    async signIn({ user, account, profile }) {
-      if (account.provider === "google" || account.provider === "github") {
-        const email = user.email;
+				return foundUser;
+			},
+		}),
+	],
+	callbacks: {
+		async signIn({ User, account, profile }) {
+			if (
+				account.provider === "google" ||
+				account.provider === "github"
+			) {
+				const email = User.email;
 
-        // Check if the user already exists in the database
-        let foundUser = await db
-          .select()
-          .from(user)
-          .where(eq(user.email, email))
-          .limit(1)
-          .then((res) => res[0]);
+				// Check if the User already exists in the database
+				let foundUser = await db
+					.select()
+					.from(User)
+					.where(eq(User.email, email))
+					.limit(1)
+					.then((res) => res[0]);
 
-        if (!foundUser) {
-          // If the user doesn't exist, create a new user
-          foundUser = await db
-            .insert(user)
-            .values({
-              email: email,
-              username: profile.login || profile.name || email.split("@")[0], // Fallback to email prefix if no username
-              name: profile.name || email.split("@")[0],
-              image: profile.picture || user.image,
-              roles: sql`'["user"]'::json`, // Assign default role 'user'
-              isVerified: true, // Consider OAuth users as verified
-              activationToken: uuidv4(),
-            })
-            .returning()
-            .then((res) => res[0]);
-        }
-      }
-      return true;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.roles = user.roles; // Updated to handle multiple roles as JSON
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.roles = token.roles; // Updated to handle multiple roles
-      return session;
-    },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/login",
-  },
+				if (!foundUser) {
+					// If the User doesn't exist, create a new User
+					foundUser = await db
+						.insert(User)
+						.values({
+							email: email,
+							username:
+								profile.login ||
+								profile.name ||
+								email.split("@")[0], // Fallback to email prefix if no username
+							name: profile.name || email.split("@")[0],
+							image: profile.picture || User.image,
+							roles: sql`'["User"]'::json`, // Assign default role 'User'
+							is_verified: true, // Consider OAuth users as verified
+							activation_token: uuidv4(),
+						})
+						.returning()
+						.then((res) => res[0]);
+				}
+			}
+			return true;
+		},
+		async jwt({ token, User }) {
+			if (User) {
+				token.id = User.id;
+				token.roles = User.roles; // Updated to handle multiple roles as JSON
+			}
+			return token;
+		},
+		async session({ session, token }) {
+			session.User.id = token.id;
+			session.User.roles = token.roles; // Updated to handle multiple roles
+			return session;
+		},
+	},
+	secret: process.env.NEXTAUTH_SECRET,
+	pages: {
+		signIn: "/login",
+	},
 };
 
 export async function getSession(req: unknown) {
-  return await getServerSession(options);
+	return await getServerSession(options);
 }
-
 
 // import GitHubProvider from "next-auth/providers/github";
 // import GoogleProvider from "next-auth/providers/google";
 // import CredentialsProvider from "next-auth/providers/credentials";
 // import { db } from "@/db"; // Ensure this path is correct
 // import bcrypt from "bcrypt";
-// import { user } from "@/db/schemas/user";
+// import { User } from "@/db/schemas/User";
 // import { eq } from "drizzle-orm";
 // import { getServerSession } from "next-auth/next";
 // import { v4 as uuidv4 } from "uuid";
@@ -138,16 +145,16 @@ export async function getSession(req: unknown) {
 //       async authorize(credentials: any) {
 //         const foundUser = await db
 //           .select()
-//           .from(user)
-//           .where(eq(user.email, credentials.email))
+//           .from(User)
+//           .where(eq(User.email, credentials.email))
 //           .limit(1)
 //           .then((res) => res[0]);
 
 //         if (!foundUser) {
-//           throw new Error("No user found with this email.");
+//           throw new Error("No User found with this email.");
 //         }
 
-//         if (!foundUser.isVerified && foundUser.activationToken) {
+//         if (!foundUser.is_verified && foundUser.activation_token) {
 //           throw new Error("Please verify your email before logging in.");
 //         }
 
@@ -164,30 +171,30 @@ export async function getSession(req: unknown) {
 //     }),
 //   ],
 //   callbacks: {
-//     async signIn({ user, account, profile }) {
+//     async signIn({ User, account, profile }) {
 //       if (account.provider === "google" || account.provider === "github") {
-//         const email = user.email;
+//         const email = User.email;
 
-//         // Check if the user already exists in the database
+//         // Check if the User already exists in the database
 //         let foundUser = await db
 //           .select()
-//           .from(user)
-//           .where(eq(user.email, email))
+//           .from(User)
+//           .where(eq(User.email, email))
 //           .limit(1)
 //           .then((res) => res[0]);
 
 //         if (!foundUser) {
-//           // If the user doesn't exist, create a new user
+//           // If the User doesn't exist, create a new User
 //           foundUser = await db
-//             .insert(user)
+//             .insert(User)
 //             .values({
 //               email: email,
 //               username: profile.login || profile.name || email.split("@")[0], // Fallback to email prefix if no username
 //               name: profile.name || email.split("@")[0],
-//               image: profile.picture || user.image,
-//               role: "user",
-//               isVerified: true, // Consider OAuth users as verified
-//               activationToken: uuidv4(),
+//               image: profile.picture || User.image,
+//               role: "User",
+//               is_verified: true, // Consider OAuth users as verified
+//               activation_token: uuidv4(),
 //             })
 //             .returning()
 //             .then((res) => res[0]);
@@ -195,16 +202,16 @@ export async function getSession(req: unknown) {
 //       }
 //       return true;
 //     },
-//     async jwt({ token, user }) {
-//       if (user) {
-//         token.id = user.id;
-//         token.role = user.role;
+//     async jwt({ token, User }) {
+//       if (User) {
+//         token.id = User.id;
+//         token.role = User.role;
 //       }
 //       return token;
 //     },
 //     async session({ session, token }) {
-//       session.user.id = token.id;
-//       session.user.role = token.role;
+//       session.User.id = token.id;
+//       session.User.role = token.role;
 //       return session;
 //     },
 //   },
@@ -214,7 +221,7 @@ export async function getSession(req: unknown) {
 //   },
 // };
 
-// export async function getSession() {
+// export async function getSession(req) {
 //   return await getServerSession(options);
 // }
 
@@ -223,7 +230,7 @@ export async function getSession(req: unknown) {
 // import CredentialsProvider from "next-auth/providers/credentials";
 // import { db } from "@/db"; // Ensure this path is correct
 // import bcrypt from "bcrypt";
-// import { user } from "@/db/schemas/user";
+// import { User } from "@/db/schemas/User";
 // import { eq } from "drizzle-orm";
 // import { getServerSession } from "next-auth/next";
 
@@ -244,20 +251,20 @@ export async function getSession(req: unknown) {
 //         password: { label: "Password", type: "password" },
 //       },
 //       async authorize(credentials) {
-//         // Fetch user from database
+//         // Fetch User from database
 //         const foundUser = await db
 //           .select()
-//           .from(user)
-//           .where(eq(user.email, credentials.email))
+//           .from(User)
+//           .where(eq(User.email, credentials.email))
 //           .limit(1)
 //           .then((res) => res[0]);
 
 //         if (!foundUser) {
-//           throw new Error("No user found with this email.");
+//           throw new Error("No User found with this email.");
 //         }
 
-//         // // Check if user is verified
-//         if (!foundUser.isVerified && foundUser.activationToken) {
+//         // // Check if User is verified
+//         if (!foundUser.is_verified && foundUser.activation_token) {
 //           throw new Error("Please verify your email before logging in.");
 //         }
 
@@ -272,16 +279,16 @@ export async function getSession(req: unknown) {
 //     }),
 //   ],
 //   callbacks: {
-//     async jwt({ token, user }) {
-//       if (user) {
-//         token.id = user.id;
-//         token.role = user.role;
+//     async jwt({ token, User }) {
+//       if (User) {
+//         token.id = User.id;
+//         token.role = User.role;
 //       }
 //       return token;
 //     },
 //     async session({ session, token }) {
-//       session.user.id = token.id;
-//       session.user.role = token.role;
+//       session.User.id = token.id;
+//       session.User.role = token.role;
 //       return session;
 //     },
 //   },
@@ -291,6 +298,6 @@ export async function getSession(req: unknown) {
 //   },
 // };
 
-// export async function getSession() {
+// export async function getSession(req) {
 //   return await getServerSession(options);
 // }

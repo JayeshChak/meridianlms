@@ -3,14 +3,16 @@
 import React, { useEffect, useState } from "react";
 import { BASE_URL } from "@/actions/constant";
 
-const ProgressBar = ({ courseId , refreshTrigger}) => {
+const ProgressBar = ({ course_id, refreshTrigger }) => {
 	const [totalScore, setTotalScore] = useState(0);
 	const [maxScore, setMaxScore] = useState(0);
 	const [progressRefresh, setProgressRefresh] = useState(0);
 	useEffect(() => {
 		const fetchProgress = async () => {
 			try {
-				const res = await fetch(`${BASE_URL}/api/progress/${courseId}`);
+				const res = await fetch(
+					`${BASE_URL}/api/progress/${course_id}`
+				);
 				if (!res.ok) throw new Error("Failed to fetch progress");
 				const data = await res.json();
 
@@ -26,7 +28,7 @@ const ProgressBar = ({ courseId , refreshTrigger}) => {
 		};
 
 		fetchProgress();
-	}, [courseId, refreshTrigger]);
+	}, [course_id, refreshTrigger]);
 
 	const percentage =
 		maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;

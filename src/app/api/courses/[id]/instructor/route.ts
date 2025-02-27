@@ -1,68 +1,73 @@
+// src/app/api/Courses/[id]/instructor/route.ts
 
-// src/app/api/courses/[id]/instructor/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db"; // Assuming db is your Drizzle ORM instance
+import { Courses } from "@/db/schemas/Courses"; // Import course schema
+import { User } from "@/db/schemas/User"; // Import User schema
+import { UserSocials } from "@/db/schemas/UserSocials"; // Import UserSocials schema
+import { eq } from "drizzle-orm"; // For building conditions
 
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db'; // Assuming db is your Drizzle ORM instance
-import { courses } from '@/db/schemas/courses'; // Import course schema
-import { user } from '@/db/schemas/user'; // Import user schema
-import { userSocials } from '@/db/schemas/userSocials'; // Import userSocials schema
-import { eq } from 'drizzle-orm'; // For building conditions
+export async function GET(
+	req: NextRequest,
+	{ params }: { params: { id: string } }
+) {
+	const course_id = params.id;
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const courseId = params.id;
+	try {
+		// Fetch the course, instructor, and instructor's social media details based on course ID
+		const result = await db
+			.select({
+				course: {
+					id: Courses.id,
+					title: Courses.title,
+					description: Courses.description,
+					price: Courses.price,
+					demo_video_url: Courses.demo_video_url,
+					is_published: Courses.is_published,
+					enrolled_count: Courses.enrolled_count,
+				},
+				instructor: {
+					id: User.id,
+					name: User.name,
+					email: User.email,
+					image: User.image,
+					roles: User.roles,
+				},
+				socials: {
+					facebook: UserSocials.facebook,
+					twitter: UserSocials.twitter,
+					linkedin: UserSocials.linkedin,
+					website: UserSocials.website,
+					github: UserSocials.github,
+				},
+			})
+			.from(Courses)
+			.leftJoin(User, eq(Courses.user_id, User.id)) // Join Courses with users table by user_id
+			.leftJoin(UserSocials, eq(UserSocials.user_id, User.id)) // Join users with UserSocials table by user_id
+			.where(eq(Courses.id, course_id)); // Filter by course ID
 
-  try {
-    // Fetch the course, instructor, and instructor's social media details based on course ID
-    const result = await db
-      .select({
-        course: {
-          id: courses.id,
-          title: courses.title,
-          description: courses.description,
-          price: courses.price,
-          demoVideoUrl: courses.demoVideoUrl,
-          isPublished: courses.isPublished,
-          enrolledCount: courses.enrolledCount,
-        },
-        instructor: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          roles: user.roles,
-        },
-        socials: {
-          facebook: userSocials.facebook,
-          twitter: userSocials.twitter,
-          linkedin: userSocials.linkedin,
-          website: userSocials.website,
-          github: userSocials.github,
-        }
-      })
-      .from(courses)
-      .leftJoin(user, eq(courses.userId, user.id)) // Join courses with users table by userId
-      .leftJoin(userSocials, eq(userSocials.userId, user.id)) // Join users with userSocials table by userId
-      .where(eq(courses.id, courseId)) // Filter by course ID
+		if (!result || result.length === 0) {
+			return NextResponse.json(
+				{
+					success: false,
+					message: `No course found with ID: ${course_id}`,
+				},
+				{ status: 404 }
+			);
+		}
 
-    if (!result || result.length === 0) {
-      return NextResponse.json({
-        success: false,
-        message: `No course found with ID: ${courseId}`,
-      }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-    });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Error fetching course, instructor, and socials',
-        error: error.message,
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json({
+			success: true,
+			data: result[0],
+		});
+	} catch (error) {
+		return NextResponse.json(
+			{
+				success: false,
+				message: "Error fetching course, instructor, and socials",
+				error: error.message,
+			},
+			{ status: 500 }
+		);
+	}
 }

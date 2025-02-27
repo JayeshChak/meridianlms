@@ -5,7 +5,7 @@ import TabsButton from "./Tabs";
 import DesignTab from "./DesignTab";
 import useTab from "@/hooks/useTab";
 import { usePathname } from "next/navigation";
-import { fetchCertificateDetails } from "@/actions/certification";
+import { fetchCertificateDetails } from "@/actions/Certification";
 import { initialPlaceholders } from "@/assets/mock";
 import type {
 	CertificateData,
@@ -21,18 +21,19 @@ import { getCroppedImg } from "@/utils/cropImage";
 import useSweetAlert from "@/hooks/useSweetAlert";
 import DownloadIcon from "@/components/sections/create-course/_comp/Certificate/Icon/DownloadIcon";
 import { v4 as uuidv4 } from "uuid";
+import Image from "next/image";
 
 interface Metadata {
-	courseName?: string;
+	course_name?: string;
 	instructor?: string;
-	courseDuration?: string;
+	course_duration?: string;
 }
 
 interface Certificate {
 	id: string;
-	certificateData: string;
+	certificate_data_url: string;
 	description: string;
-	uniqueIdentifier: string;
+	unique_identifier: string;
 	metadata?: Metadata;
 }
 
@@ -64,7 +65,7 @@ const convertLabelToKey = (label: string) => {
 const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const { currentIdx, handleTabClick } = useTab();
 	const pathname = usePathname();
-	const certificateId = pathname?.split("/").pop() || "";
+	const certificate_id = pathname?.split("/").pop() || "";
 
 	// States
 	const [selectedImages, setSelectedImages] = useState<ImageOption[]>([]);
@@ -75,9 +76,9 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const [future, setFuture] = useState<any[]>([]);
 	const [isEditing, setIsEditing] = useState(false);
 	const [instructorName, setInstructorName] = useState("");
-	const [placeholders, setPlaceholders] =
+	const [Placeholders, setPlaceholders] =
 		useState<CertificatePlaceHolders[]>(initialPlaceholders);
-	const [certificateData, setCertificateData] =
+	const [certificate_data_url, setCertificateData] =
 		useState<CertificateData | null>(null);
 	const [showOptions, setShowOptions] = useState(false);
 	const [crop, setCrop] = useState<Crop>({
@@ -94,11 +95,12 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const showAlert = useSweetAlert();
 
 	// Create a debounced save function for placeholder positions
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const savePlaceholderPosition = useCallback(
 		debounce(async (placeholderId, x, y) => {
 			try {
 				const response = await fetch(
-					`/api/manageCertificates/${certificateId}`,
+					`/api/manageCertificates/${certificate_id}`,
 					{
 						method: "PATCH",
 						headers: { "Content-Type": "application/json" },
@@ -112,7 +114,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 				console.error("Error saving placeholder position:", error);
 			}
 		}, 500), // ✅ Debounce for 500ms
-		[certificateId]
+		[certificate_id]
 	);
 
 	// Utility function to strip HTML tags
@@ -129,22 +131,20 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 		if (newValue) {
 			setSelectedImages([newValue]);
 			setCertificateData({
-				id: certificateId,
-				certificateId: certificateId,
-				imageUrl: newValue.value,
-				ownerId: "",
-				certificateData: newValue.value,
-				isPublished: false,
-				uniqueIdentifier: "",
+				id: certificate_id,
+				certificate_data_url: newValue.value,
+				owner_id: "",
+				is_published: false,
+				unique_identifier: "",
 				title: newValue.label,
-				isRevocable: false,
+				is_revocable: false,
 				metadata: {
-					courseName: "",
+					course_name: "",
 					instructor: "",
-					courseDuration: "",
+					course_duration: "",
 				},
-				createdAt: "",
-				updatedAt: "",
+				created_at: "",
+				updated_at: "",
 			});
 		} else {
 			setSelectedImages([]);
@@ -176,11 +176,11 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 
 			const fetchedImages: ImageOption[] = data.certificates.map(
 				(cert: Certificate) => ({
-					value: cert.certificateData,
+					value: cert.certificate_data_url,
 					label: `${stripHtmlTags(
 						cert.description ||
-							`Certificate ${cert.uniqueIdentifier}`
-					)} - ${cert.metadata?.courseName || "No Course Name"}`,
+							`Certificate ${cert.unique_identifier}`
+					)} - ${cert.metadata?.course_name || "No Course Name"}`,
 				})
 			);
 
@@ -208,7 +208,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const handleUndo = () => {
 		if (history.length > 0) {
 			const previousState = history[history.length - 1];
-			setFuture((prev) => [certificateData, ...prev]);
+			setFuture((prev) => [certificate_data_url, ...prev]);
 			setDesignData(previousState);
 			setHistory((prev) => prev.slice(0, prev.length - 1));
 		}
@@ -217,7 +217,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const handleRedo = () => {
 		if (future.length > 0) {
 			const nextState = future[0];
-			setHistory((prev) => [...prev, certificateData]);
+			setHistory((prev) => [...prev, certificate_data_url]);
 			setDesignData(nextState);
 			setFuture((prev) => prev.slice(1));
 		}
@@ -333,15 +333,21 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 	const handleSaveChanges = async () => {
 		setLoading(true);
 		try {
-			if (!certificateData) {
+			if (!certificate_data_url) {
 				throw new Error("Certificate data is missing");
 			}
 
-			if (!certificateData.id || certificateData.id.trim() === "") {
+			if (
+				!certificate_data_url.id ||
+				certificate_data_url.id.trim() === ""
+			) {
 				throw new Error("Certificate ID is missing or empty");
 			}
 
-			console.log("Certificate data before saving:", certificateData);
+			console.log(
+				"Certificate data before saving:",
+				certificate_data_url
+			);
 
 			const isValidUUID = (uuid: string) => {
 				const uuidRegex =
@@ -349,36 +355,39 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 				return uuidRegex.test(uuid);
 			};
 
-			if (!isValidUUID(certificateData.id)) {
-				console.error("Invalid certificate ID:", certificateData.id);
+			if (!isValidUUID(certificate_data_url.id)) {
+				console.error(
+					"Invalid certificate ID:",
+					certificate_data_url.id
+				);
 				throw new Error(
-					`Invalid certificate ID: ${certificateData.id}`
+					`Invalid certificate ID: ${certificate_data_url.id}`
 				);
 			}
 
-			// ✅ Ensure placeholders retain their original IDs // ! warning i added this line
-			const updatedPlaceholders = placeholders.map((p) => ({
-				id: isValidUUID(p.id) ? p.id : uuidv4(), // Keep existing UUIDs
-				key: p.key ? p.key : convertLabelToKey(p.label), // Keep consistent keys
+			// ✅ Ensure Placeholders retain their original IDs // ! warning i added this line
+			const updatedPlaceholders = Placeholders.map((p) => ({
+				id: isValidUUID(p.id || "") ? p.id : uuidv4(), // Keep existing UUIDs
+				key: p.key ? p.key : convertLabelToKey(p.label || ""), // Provide default value for label
 				label: p.label,
 				value: p.value,
 				x: p.x, // Ensure X position is stored
 				y: p.y, // Ensure Y position is stored
-				fontSize: p.fontSize,
-				isVisible: p.isVisible,
+				font_size: p.font_size,
+				is_visible: p.is_visible,
 				color: p.color,
 			}));
 
 			const payload = {
-				id: certificateData.id,
+				id: certificate_data_url.id,
 				image: selectedImages[0]?.value, // Include the certificate image
-				placeholders: updatedPlaceholders,
+				Placeholders: updatedPlaceholders,
 			};
 
 			console.log("Payload for saving certificate:", payload);
 
 			const response = await fetch(
-				`/api/manageCertificates/${certificateData.id}`,
+				`/api/manageCertificates/${certificate_data_url.id}`,
 				{
 					method: "PUT",
 					headers: {
@@ -475,21 +484,21 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 							<h3 className="text-lg font-bold mb-4">
 								Placeholder Settings
 							</h3>
-							{Array.isArray(placeholders) &&
-							placeholders.length > 0 ? (
+							{Array.isArray(Placeholders) &&
+							Placeholders.length > 0 ? (
 								<>
 									<Select
 										isMulti
-										options={placeholders.map((p) => ({
+										options={Placeholders.map((p) => ({
 											value: p.id,
 											label: p.label,
 										}))}
-										value={placeholders
-											.filter((p) => p.isVisible)
-											.map((p) => ({
-												value: p.id,
-												label: p.label,
-											}))}
+										value={Placeholders.filter(
+											(p) => p.is_visible
+										).map((p) => ({
+											value: p.id,
+											label: p.label,
+										}))}
 										onChange={(selected) => {
 											const selectedIds =
 												selected?.map(
@@ -498,7 +507,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 											setPlaceholders((prev) =>
 												prev.map((p) => ({
 													...p,
-													isVisible:
+													is_visible:
 														selectedIds.includes(
 															p.id
 														),
@@ -507,7 +516,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 										}}
 										className="mb-4"
 									/>
-									{placeholders.map((placeholder) => (
+									{Placeholders.map((placeholder) => (
 										<div
 											key={placeholder.id}
 											className="mb-2 flex items-center justify-between"
@@ -520,7 +529,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 												<input
 													type="number"
 													value={
-														placeholder.fontSize ||
+														placeholder.font_size ||
 														16
 													}
 													onChange={(e) => {
@@ -541,7 +550,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 																	placeholder.id
 																		? {
 																				...p,
-																				fontSize:
+																				font_size:
 																					size,
 																		  }
 																		: p
@@ -557,7 +566,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 									))}
 								</>
 							) : (
-								<p>No placeholders available</p>
+								<p>No Placeholders available</p>
 							)}
 						</div>
 					)}
@@ -578,11 +587,13 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 									onChange={(c) => setCrop(c)}
 									aspect={842 / 595}
 								>
-									<img
+									<Image
 										data-crop-source
 										src={selectedImages[0].value}
-										alt="Certificate to crop"
 										className="max-w-full"
+										alt={selectedImages[0].label}
+										layout="fill"
+										objectFit="contain"
 										crossOrigin="anonymous"
 									/>
 								</ReactCrop>
@@ -605,19 +616,21 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 						</div>
 					) : (
 						<div className="certificate-container relative w-[842px] h-[595px] mx-auto bg-white">
-							<img
+							<Image
 								src={selectedImages[0].value}
 								alt={selectedImages[0].label}
 								className="w-full h-full object-contain"
+								layout="fill"
+								objectFit="contain"
 								crossOrigin="anonymous"
 							/>
 							{/* Editable Placeholders */}
 							<div className="absolute inset-0 p-8">
-								{Array.isArray(placeholders) &&
-									placeholders.map(
+								{Array.isArray(Placeholders) &&
+									Placeholders.map(
 										(placeholder, index) =>
 											placeholder &&
-											placeholder.isVisible && (
+											placeholder.is_visible && (
 												<Draggable
 													key={placeholder.id}
 													defaultPosition={{
@@ -658,7 +671,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 															onChange={(e) => {
 																const newPlaceholders =
 																	[
-																		...placeholders,
+																		...Placeholders,
 																	];
 																newPlaceholders[
 																	index
@@ -677,7 +690,7 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
                      focus:border-blue-500 rounded px-2 py-1 outline-none transition-all"
 															style={{
 																fontSize: `${
-																	placeholder.fontSize ||
+																	placeholder.font_size ||
 																	16
 																}px`,
 																minWidth:
@@ -712,30 +725,28 @@ const EditCertiFields: React.FC<EditCertiFieldsProps> = ({ setDesignData }) => {
 			<div className="mt-4">
 				{currentIdx === 0 && (
 					<DesignTab
-						certificateData={
-							certificateData || {
-								id: certificateId,
-								certificateId: certificateId,
-								imageUrl: "",
-								ownerId: "",
-								certificateData: "",
-								isPublished: false,
-								uniqueIdentifier: "",
+						certificate_data_url={
+							certificate_data_url || {
+								id: certificate_id,
+								owner_id: "",
+								certificate_data_url: "",
+								is_published: false,
+								unique_identifier: "",
 								title: "",
-								isRevocable: false,
+								is_revocable: false,
 								metadata: {
-									courseName: "",
+									course_name: "",
 									instructor: "",
-									courseDuration: "",
+									course_duration: "",
 								},
-								createdAt: "",
-								updatedAt: "",
+								created_at: "",
+								updated_at: "",
 							}
 						}
 						isEditing={isEditing}
 						instructorName={instructorName}
 						setDesignData={setDesignData}
-						placeholders={placeholders}
+						Placeholders={Placeholders}
 						setPlaceholders={setPlaceholders}
 					/>
 				)}

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import EditCertificateModal from "./EditCertificateModal";
 import useSweetAlert from "@/hooks/useSweetAlert";
 
-// Define session user type to include `id`
+// Define session User type to include `id`
 interface CustomUser {
 	id: string;
 	name?: string | null;
@@ -27,13 +27,13 @@ interface Certificate {
 	filePath?: string;
 	previewUrl?: string;
 	created_at: string;
-	updatedAt?: string;
-	isPublished: boolean;
+	updated_at?: string;
+	is_published: boolean;
 	unique_identifier: string;
 }
 
 interface DeletedCertificate extends Certificate {
-	deletedAt: string;
+	deleted_at: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -54,10 +54,10 @@ const ManageCertificateTable = () => {
 	const showAlert = useSweetAlert();
 	const router = useRouter();
 
-	const userId = (session?.user as CustomUser)?.id; // Safely extract user ID
+	const user_id = (session?.User as CustomUser)?.id; // Safely extract User ID
 
 	useEffect(() => {
-		if (!session?.user) {
+		if (!session?.User) {
 			setIsLoading(false);
 			return;
 		}
@@ -82,17 +82,17 @@ const ManageCertificateTable = () => {
 				const data = await response.json();
 				console.log("Fetched data from API:", data); // ✅ Log API response
 
-				const userId = (session?.user as { id: string })?.id;
-				console.log("Logged-in user ID:", userId); // ✅ Log user ID
+				const user_id = (session?.User as { id: string })?.id;
+				console.log("Logged-in User ID:", user_id); // ✅ Log User ID
 
-				if (!userId) {
+				if (!user_id) {
 					console.warn("User ID is undefined, skipping filtering.");
-					setCertificates([]); // Ensure state is reset if user ID is missing
+					setCertificates([]); // Ensure state is reset if User ID is missing
 					return;
 				}
 
 				const filteredCertificates = data.filter(
-					(cert: Certificate) => cert.owner_id === userId
+					(cert: Certificate) => cert.owner_id === user_id
 				);
 				console.log("Filtered certificates:", filteredCertificates); // ✅ Log filtered data
 
@@ -110,7 +110,7 @@ const ManageCertificateTable = () => {
 		};
 
 		fetchCertificates();
-	}, [session?.user]);
+	}, [session?.User]);
 
 	const handleEdit = (certificate: Certificate) => {
 		if (!certificate?.course_id) {
@@ -120,13 +120,13 @@ const ManageCertificateTable = () => {
 		router.push(`/dashboards/certificates/edit/${certificate.course_id}`);
 	};
 
-	const handleDelete = async (certificateId: string) => {
+	const handleDelete = async (certificate_id: string) => {
 		if (!confirm("Are you sure you want to delete this certificate?"))
 			return;
 
 		try {
 			const response = await fetch(
-				`/api/manageCertificates/${certificateId}/permanent`,
+				`/api/manageCertificates/${certificate_id}/permanent`,
 				{
 					method: "DELETE",
 					credentials: "include",
@@ -143,7 +143,7 @@ const ManageCertificateTable = () => {
 
 			// Remove the deleted certificate from state
 			setCertificates((prev) =>
-				prev.filter((c) => c.id !== certificateId)
+				prev.filter((c) => c.id !== certificate_id)
 			);
 
 			showAlert("success", "Certificate deleted successfully!");
@@ -153,17 +153,17 @@ const ManageCertificateTable = () => {
 		}
 	};
 
-	// const handleRestore = async (certificateId: string) => {
+	// const handleRestore = async (certificate_id: string) => {
 	// 	try {
 	// 		const response = await fetch(
-	// 			`/api/manageCertificates/${certificateId}/restore`,
+	// 			`/api/manageCertificates/${certificate_id}/restore`,
 	// 			{ method: "POST", credentials: "include" }
 	// 		);
 
 	// 		if (!response.ok) throw new Error("Failed to restore certificate");
 
 	// 		setDeletedCertificates((prev) =>
-	// 			prev.filter((c) => c.id !== certificateId)
+	// 			prev.filter((c) => c.id !== certificate_id)
 	// 		);
 	// 	} catch (error) {
 	// 		showAlert("error", "Failed to restore certificate");
@@ -228,7 +228,7 @@ const ManageCertificateTable = () => {
 								<td className="p-4">{cert.title}</td>
 								<td className="p-4">
 									{new Date(
-										cert.deletedAt
+										cert.deleted_at
 									).toLocaleDateString()}
 								</td>
 								<td className="p-4 flex gap-4">
@@ -280,7 +280,7 @@ const ManageCertificateTable = () => {
 								</td>
 
 								<td className="p-4">
-									{cert.isPublished === true
+									{cert.is_published === true
 										? "Active"
 										: "Draft"}
 								</td>

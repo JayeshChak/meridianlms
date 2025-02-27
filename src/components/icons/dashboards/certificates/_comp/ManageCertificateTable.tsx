@@ -16,13 +16,13 @@
 // 	courseTitle?: string | null;
 // 	filePath?: string;
 // 	previewUrl?: string;
-// 	createdAt: string;
-// 	updatedAt?: string;
-// 	isPublished: boolean;
+// 	created_at: string;
+// 	updated_at?: string;
+// 	is_published: boolean;
 // }
 
 // interface DeletedCertificate extends Certificate {
-// 	deletedAt: string;
+// 	deleted_at: string;
 // }
 
 // const ITEMS_PER_PAGE = 10;
@@ -102,13 +102,13 @@
 // 		router.push(`/dashboards/certificates/edit/${certificate.course_id}`);
 // 	};
 
-// 	const handleDelete = async (certificateId: string) => {
+// 	const handleDelete = async (certificate_id: string) => {
 // 		if (!confirm("Are you sure you want to delete this certificate?"))
 // 			return;
 
 // 		try {
 // 			const response = await fetch(
-// 				`/api/manageCertificates/${certificateId}`,
+// 				`/api/manageCertificates/${certificate_id}`,
 // 				{
 // 					method: "DELETE",
 // 					credentials: "include",
@@ -118,16 +118,16 @@
 // 			if (!response.ok) throw new Error("Failed to delete certificate");
 
 // 			const certificateToDelete = certificates.find(
-// 				(c) => c.id === certificateId
+// 				(c) => c.id === certificate_id
 // 			);
 // 			if (certificateToDelete) {
 // 				const deletedCertificate: DeletedCertificate = {
 // 					...certificateToDelete,
-// 					deletedAt: new Date().toISOString(),
+// 					deleted_at: new Date().toISOString(),
 // 				};
 // 				setDeletedCertificates((prev) => [...prev, deletedCertificate]);
 // 				setCertificates((prev) =>
-// 					prev.filter((c) => c.id !== certificateId)
+// 					prev.filter((c) => c.id !== certificate_id)
 // 				);
 // 			}
 // 		} catch (error) {
@@ -136,10 +136,10 @@
 // 		}
 // 	};
 
-// 	const handleRestore = async (certificateId: string) => {
+// 	const handleRestore = async (certificate_id: string) => {
 // 		try {
 // 			const response = await fetch(
-// 				`/api/manageCertificates/${certificateId}/restore`,
+// 				`/api/manageCertificates/${certificate_id}/restore`,
 // 				{
 // 					method: "POST",
 // 					credentials: "include",
@@ -149,14 +149,14 @@
 // 			if (!response.ok) throw new Error("Failed to restore certificate");
 
 // 			const certificateToRestore = deletedCertificates.find(
-// 				(c) => c.id === certificateId
+// 				(c) => c.id === certificate_id
 // 			);
 // 			if (certificateToRestore) {
-// 				const { deletedAt, ...restoredCertificate } =
+// 				const { deleted_at, ...restoredCertificate } =
 // 					certificateToRestore;
 // 				setCertificates((prev) => [...prev, restoredCertificate]);
 // 				setDeletedCertificates((prev) =>
-// 					prev.filter((c) => c.id !== certificateId)
+// 					prev.filter((c) => c.id !== certificate_id)
 // 				);
 // 			}
 // 		} catch (error) {
@@ -183,7 +183,7 @@
 // 						id: updatedCertificate.id,
 // 						title: updatedCertificate.title,
 // 						description: updatedCertificate.description,
-// 						isPublished: updatedCertificate.isPublished,
+// 						is_published: updatedCertificate.is_published,
 // 					}),
 // 				}
 // 			);
@@ -213,7 +213,7 @@
 // 		}
 // 	};
 
-// 	const handlePermanentDelete = async (certificateId: string) => {
+// 	const handlePermanentDelete = async (certificate_id: string) => {
 // 		if (
 // 			!confirm(
 // 				"Are you sure you want to permanently delete this certificate? This action cannot be undone."
@@ -224,7 +224,7 @@
 
 // 		try {
 // 			const response = await fetch(
-// 				`/api/manageCertificates/${certificateId}/permanent`,
+// 				`/api/manageCertificates/${certificate_id}/permanent`,
 // 				{
 // 					method: "DELETE",
 // 					headers: {
@@ -243,7 +243,7 @@
 // 			}
 
 // 			setDeletedCertificates((prev) =>
-// 				prev.filter((cert) => cert.id !== certificateId)
+// 				prev.filter((cert) => cert.id !== certificate_id)
 // 			);
 // 			showAlert("success", "Certificate permanently deleted");
 // 		} catch (error) {
@@ -294,7 +294,7 @@
 // 								<td className="p-4">{cert.title}</td>
 // 								<td className="p-4">
 // 									{new Date(
-// 										cert.deletedAt
+// 										cert.deleted_at
 // 									).toLocaleDateString()}
 // 								</td>
 // 								<td className="p-4 flex gap-4">
@@ -353,21 +353,21 @@
 // 										{cert.course_id || "N/A"}
 // 									</td>
 // 									<td className="p-4">
-// 										{cert.createdAt
+// 										{cert.created_at
 // 											? new Date(
-// 													cert.createdAt
+// 													cert.created_at
 // 											  ).toLocaleDateString()
 // 											: "N/A"}
 // 									</td>
 // 									<td className="p-4">
 // 										<span
 // 											className={`px-2 py-1 rounded-full text-sm ${
-// 												cert.isPublished
+// 												cert.is_published
 // 													? "bg-green-100 text-green-800"
 // 													: "bg-yellow-100 text-yellow-800"
 // 											}`}
 // 										>
-// 											{cert.isPublished
+// 											{cert.is_published
 // 												? "Active"
 // 												: "Draft"}
 // 										</span>
@@ -375,14 +375,14 @@
 // 									<td className="p-4">
 // 										<button
 // 											onClick={() => handleEdit(cert)}
-// 											className="text-blue-500 mr-4 hover:text-blue-600 
-//                                                      transition-all duration-300 hover:scale-110 
+// 											className="text-blue-500 mr-4 hover:text-blue-600
+//                                                      transition-all duration-300 hover:scale-110
 //                                                      relative group inline-flex items-center"
 // 										>
 // 											Edit
 // 											<span
-// 												className="absolute bottom-0 left-0 w-0 h-0.5 
-//                                                            bg-blue-500 group-hover:w-full 
+// 												className="absolute bottom-0 left-0 w-0 h-0.5
+//                                                            bg-blue-500 group-hover:w-full
 //                                                            transition-all duration-300"
 // 											></span>
 // 										</button>
@@ -390,14 +390,14 @@
 // 											onClick={() =>
 // 												handleDelete(cert.id)
 // 											}
-// 											className="text-red-500 hover:text-red-600 
-//                                                      transition-all duration-300 hover:scale-110 
+// 											className="text-red-500 hover:text-red-600
+//                                                      transition-all duration-300 hover:scale-110
 //                                                      relative group inline-flex items-center"
 // 										>
 // 											Delete
 // 											<span
-// 												className="absolute bottom-0 left-0 w-0 h-0.5 
-//                                                            bg-red-500 group-hover:w-full 
+// 												className="absolute bottom-0 left-0 w-0 h-0.5
+//                                                            bg-red-500 group-hover:w-full
 //                                                            transition-all duration-300"
 // 											></span>
 // 										</button>
@@ -481,13 +481,13 @@
 // //     courseTitle?: string | null;
 // //     filePath?: string;
 // //     previewUrl?: string;
-// //     createdAt: string;
-// //     updatedAt?: string;
-// //     isPublished: boolean;
+// //     created_at: string;
+// //     updated_at?: string;
+// //     is_published: boolean;
 // // }
 
 // // interface DeletedCertificate extends Certificate {
-// //     deletedAt: string;
+// //     deleted_at: string;
 // // }
 
 // // const ITEMS_PER_PAGE = 10;
@@ -548,25 +548,25 @@
 // //         setEditingCertificate(certificate);
 // //     };
 
-// //     const handleDelete = async (certificateId: string) => {
+// //     const handleDelete = async (certificate_id: string) => {
 // //         if (!confirm('Are you sure you want to delete this certificate?')) return;
 
 // //         try {
-// //             const response = await fetch(`/api/manageCertificates/${certificateId}`, {
+// //             const response = await fetch(`/api/manageCertificates/${certificate_id}`, {
 // //                 method: 'DELETE',
 // //                 credentials: 'include',
 // //             });
 
 // //             if (!response.ok) throw new Error('Failed to delete certificate');
 
-// //             const certificateToDelete = certificates.find(c => c.id === certificateId);
+// //             const certificateToDelete = certificates.find(c => c.id === certificate_id);
 // //             if (certificateToDelete) {
 // //                 const deletedCertificate: DeletedCertificate = {
 // //                     ...certificateToDelete,
-// //                     deletedAt: new Date().toISOString()
+// //                     deleted_at: new Date().toISOString()
 // //                 };
 // //                 setDeletedCertificates(prev => [...prev, deletedCertificate]);
-// //                 setCertificates(prev => prev.filter(c => c.id !== certificateId));
+// //                 setCertificates(prev => prev.filter(c => c.id !== certificate_id));
 // //             }
 // //         } catch (error) {
 // //             console.error('Error deleting certificate:', error);
@@ -574,20 +574,20 @@
 // //         }
 // //     };
 
-// //     const handleRestore = async (certificateId: string) => {
+// //     const handleRestore = async (certificate_id: string) => {
 // //         try {
-// //             const response = await fetch(`/api/manageCertificates/${certificateId}/restore`, {
+// //             const response = await fetch(`/api/manageCertificates/${certificate_id}/restore`, {
 // //                 method: 'POST',
 // //                 credentials: 'include',
 // //             });
 
 // //             if (!response.ok) throw new Error('Failed to restore certificate');
 
-// //             const certificateToRestore = deletedCertificates.find(c => c.id === certificateId);
+// //             const certificateToRestore = deletedCertificates.find(c => c.id === certificate_id);
 // //             if (certificateToRestore) {
-// //                 const { deletedAt, ...restoredCertificate } = certificateToRestore;
+// //                 const { deleted_at, ...restoredCertificate } = certificateToRestore;
 // //                 setCertificates(prev => [...prev, restoredCertificate]);
-// //                 setDeletedCertificates(prev => prev.filter(c => c.id !== certificateId));
+// //                 setDeletedCertificates(prev => prev.filter(c => c.id !== certificate_id));
 // //             }
 // //         } catch (error) {
 // //             console.error('Error restoring certificate:', error);
@@ -609,7 +609,7 @@
 // //                     id: updatedCertificate.id,
 // //                     title: updatedCertificate.title,
 // //                     description: updatedCertificate.description,
-// //                     isPublished: updatedCertificate.isPublished,
+// //                     is_published: updatedCertificate.is_published,
 // //                 }),
 // //             });
 
@@ -634,13 +634,13 @@
 // //         }
 // //     };
 
-// //     const handlePermanentDelete = async (certificateId: string) => {
+// //     const handlePermanentDelete = async (certificate_id: string) => {
 // //         if (!confirm('Are you sure you want to permanently delete this certificate? This action cannot be undone.')) {
 // //             return;
 // //         }
 
 // //         try {
-// //             const response = await fetch(`/api/manageCertificates/${certificateId}/permanent`, {
+// //             const response = await fetch(`/api/manageCertificates/${certificate_id}/permanent`, {
 // //                 method: 'DELETE',
 // //                 headers: {
 // //                     'Content-Type': 'application/json',
@@ -654,7 +654,7 @@
 // //                 throw new Error(data.message || 'Failed to delete certificate permanently');
 // //             }
 
-// //             setDeletedCertificates(prev => prev.filter(cert => cert.id !== certificateId));
+// //             setDeletedCertificates(prev => prev.filter(cert => cert.id !== certificate_id));
 // //             showAlert('success', 'Certificate permanently deleted');
 // //         } catch (error) {
 // //             console.error('Error deleting certificate:', error);
@@ -703,7 +703,7 @@
 // //                             <tr key={cert.id} className="border">
 // //                                 <td className="p-4">{cert.title}</td>
 // //                                 <td className="p-4">
-// //                                     {new Date(cert.deletedAt).toLocaleDateString()}
+// //                                     {new Date(cert.deleted_at).toLocaleDateString()}
 // //                                 </td>
 // //                                 <td className="p-4 flex gap-4">
 // //                                     <button
@@ -748,15 +748,15 @@
 // //                                     </td>
 // //                                     <td className="p-4">{cert.courseTitle || 'N/A'}</td>
 // //                                     <td className="p-4">
-// //                                         {cert.createdAt ? new Date(cert.createdAt).toLocaleDateString() : 'N/A'}
+// //                                         {cert.created_at ? new Date(cert.created_at).toLocaleDateString() : 'N/A'}
 // //                                     </td>
 // //                                     <td className="p-4">
 // //                                         <span className={`px-2 py-1 rounded-full text-sm ${
-// //                                             cert.isPublished
+// //                                             cert.is_published
 // //                                             ? 'bg-green-100 text-green-800'
 // //                                             : 'bg-yellow-100 text-yellow-800'
 // //                                         }`}>
-// //                                             {cert.isPublished ? 'Active' : 'Draft'}
+// //                                             {cert.is_published ? 'Active' : 'Draft'}
 // //                                         </span>
 // //                                     </td>
 // //                                     <td className="p-4">

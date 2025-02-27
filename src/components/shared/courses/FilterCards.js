@@ -6,96 +6,93 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 const FilterCards = ({ type }) => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+	const [Courses, setCourses] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
-  const filterOptions = [
-    "filter1 filter3",
-    "filter2 filter3",
-    "filter4 filter5",
-    "filter4",
-    "filter1 filter3",
-    "filter2 filter5",
-    "filter4 filter5",
-    "filter4",
-  ];
+	const filterOptions = [
+		"filter1 filter3",
+		"filter2 filter3",
+		"filter4 filter5",
+		"filter4",
+		"filter1 filter3",
+		"filter2 filter5",
+		"filter4 filter5",
+		"filter4",
+	];
 
-  // Filters the courses based on the type and limits the number
-  const displayedCourses = type === "lg" ? courses.slice(0, 8) : courses.slice(0, 6);
+	// Filters the Courses based on the type and limits the number
+	const displayedCourses =
+		type === "lg" ? Courses.slice(0, 8) : Courses.slice(0, 6);
 
-  // Fetch courses on component mount
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/api/courses`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch courses");
-        }
-        const data = await response.json();
-        console.log("Fetched courses:", data.data); // Log fetched data
-        setCourses(data.data || []); // Ensure data is an array
-      } catch (err) {
-        setError(err.message || "An unknown error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
+	// Fetch Courses on component mount
+	useEffect(() => {
+		const fetchCourses = async () => {
+			setLoading(true);
+			setError(null);
+			try {
+				const response = await fetch(`/api/Courses`);
+				if (!response.ok) {
+					throw new Error("Failed to fetch Courses");
+				}
+				const data = await response.json();
+				console.log("Fetched Courses:", data.data); // Log fetched data
+				setCourses(data.data || []); // Ensure data is an array
+			} catch (err) {
+				setError(err.message || "An unknown error occurred");
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    fetchCourses();
-  }, []);
+		fetchCourses();
+	}, []);
 
-  // Initialize AOS
-  useEffect(() => {
-    AOS.init({
-      duration: 1200, // Customize as needed
-      once: true, // Whether animation should happen only once
-    });
-  }, []);
+	// Initialize AOS
+	useEffect(() => {
+		AOS.init({
+			duration: 1200, // Customize as needed
+			once: true, // Whether animation should happen only once
+		});
+	}, []);
 
-  // Refresh AOS when courses are updated
-  useEffect(() => {
-    if (!loading && !error) {
-      AOS.refresh();
-    }
-  }, [courses, loading, error]);
+	// Refresh AOS when Courses are updated
+	useEffect(() => {
+		if (!loading && !error) {
+			AOS.refresh();
+		}
+	}, [Courses, loading, error]);
 
-  if (loading) {
-    return <div>Loading courses...</div>; // Simple loading state
-  }
+	if (loading) {
+		return <div>Loading Courses...</div>; // Simple loading state
+	}
 
-  if (error) {
-    return <div>Error: {error}</div>; // Error handling
-  }
+	if (error) {
+		return <div>Error: {error}</div>; // Error handling
+	}
 
-  if (displayedCourses.length === 0) {
-    return <div>No courses available</div>; // Handle no courses scenario
-  }
+	if (displayedCourses.length === 0) {
+		return <div>No Courses available</div>; // Handle no Courses scenario
+	}
 
-  return (
-    <div
-      className="filter-contents flex flex-wrap sm:-mx-15px box-content mt-7 lg:mt-25px"
-    >
-      {displayedCourses.map((course, idx) => (
-        <CourseCard
-          key={idx}
-          idx={idx}
-          type={type}
-          course={{
-            ...course,
-            filterOption: filterOptions[idx] || "default-filter", // Ensure filterOption exists
-          }}
-        />
-      ))}
-    </div>
-  );
+	return (
+		<div className="filter-contents flex flex-wrap sm:-mx-15px box-content mt-7 lg:mt-25px">
+			{displayedCourses.map((course, idx) => (
+				<CourseCard
+					key={idx}
+					idx={idx}
+					type={type}
+					course={{
+						...course,
+						filterOption: filterOptions[idx] || "default-filter", // Ensure filterOption exists
+					}}
+				/>
+			))}
+		</div>
+	);
 };
 
 export default FilterCards;
-
-
 
 // "use client";
 
@@ -103,7 +100,7 @@ export default FilterCards;
 // import CourseCard from "./CourseCard";
 
 // const FilterCards = ({ type }) => {
-//   const [courses, setCourses] = useState([]);
+//   const [Courses, setCourses] = useState([]);
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState(null);
 
@@ -118,20 +115,20 @@ export default FilterCards;
 //     "filter4",
 //   ];
 
-//   // Filters the courses based on the type and limits the number
-//   const displayedCourses = type === "lg" ? courses.slice(0, 8) : courses.slice(0, 6);
+//   // Filters the Courses based on the type and limits the number
+//   const displayedCourses = type === "lg" ? Courses.slice(0, 8) : Courses.slice(0, 6);
 
 //   useEffect(() => {
 //     const fetchCourses = async () => {
 //       setLoading(true);
 //       setError(null);
 //       try {
-//         const response = await fetch(`/api/courses`);
+//         const response = await fetch(`/api/Courses`);
 //         if (!response.ok) {
-//           throw new Error("Failed to fetch courses");
+//           throw new Error("Failed to fetch Courses");
 //         }
 //         const data = await response.json();
-//         console.log("Fetched courses:", data.data); // Log fetched data
+//         console.log("Fetched Courses:", data.data); // Log fetched data
 //         setCourses(data.data || []); // Ensure data is an array
 //       } catch (err) {
 //         setError(err.message || "An unknown error occurred");
@@ -144,7 +141,7 @@ export default FilterCards;
 //   }, []);
 
 //   if (loading) {
-//     return <div>Loading courses...</div>; // Simple loading state
+//     return <div>Loading Courses...</div>; // Simple loading state
 //   }
 
 //   if (error) {
@@ -152,7 +149,7 @@ export default FilterCards;
 //   }
 
 //   if (displayedCourses.length === 0) {
-//     return <div>No courses available</div>; // Handle no courses scenario
+//     return <div>No Courses available</div>; // Handle no Courses scenario
 //   }
 
 //   return (
@@ -176,4 +173,3 @@ export default FilterCards;
 // };
 
 // export default FilterCards;
-

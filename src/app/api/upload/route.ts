@@ -1,51 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 import { uploadToCloudinary } from "@/libs/uploadinary/upload"; // Adjust the path to your upload function
 
 export async function POST(req: NextRequest) {
-  try {
-    // Parse the form data
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
+	try {
+		// Parse the form data
+		const formData = await req.formData();
+		const file = formData.get("file") as File;
 
-    if (!file) {
-      return NextResponse.json({ message: "No file provided" }, { status: 400 });
-    }
+		if (!file) {
+			return NextResponse.json(
+				{ message: "No file provided" },
+				{ status: 400 }
+			);
+		}
 
-    // Convert the file to a buffer
-    const fileBuffer = await file.arrayBuffer();
+		// Convert the file to a buffer
+		const fileBuffer = await file.arrayBuffer();
 
-    // Get the MIME type and convert to base64
-    const mimeType = file.type;
-    const encoding = "base64";
-    const base64Data = Buffer.from(fileBuffer).toString("base64");
+		// Get the MIME type and convert to base64
+		const mimeType = file.type;
+		const encoding = "base64";
+		const base64Data = Buffer.from(fileBuffer).toString("base64");
 
-    // Create the data URI for Cloudinary
-    const fileUri = `data:${mimeType};${encoding},${base64Data}`;
+		// Create the data URI for Cloudinary
+		const fileUri = `data:${mimeType};${encoding},${base64Data}`;
 
-    // Upload the file to Cloudinary
-    const res = await uploadToCloudinary(fileUri, file.name);
+		// Upload the file to Cloudinary
+		const res = await uploadToCloudinary(fileUri, file.name);
 
-    if (res.success && res.result) {
-      return NextResponse.json({ 
-        message: "success", 
-        imgUrl: res.result.secure_url 
-      });
-    } else {
-      return NextResponse.json({ 
-        message: "failure", 
-        error: res ,
-      }, { status: 500 });
-    }
-  } catch (error) {
-    console.error("Error during file upload:", error);
-    return NextResponse.json({ 
-      message: "An error occurred during file upload", 
-      error: error.message 
-    }, { status: 500 });
-  }
+		if (res.success && res.result) {
+			return NextResponse.json({
+				message: "success",
+				imgUrl: res.result.secure_url,
+			});
+		} else {
+			return NextResponse.json(
+				{
+					message: "failure",
+					error: res,
+				},
+				{ status: 500 }
+			);
+		}
+	} catch (error) {
+		console.error("Error during file upload:", error);
+		return NextResponse.json(
+			{
+				message: "An error occurred during file upload",
+				error: error.message,
+			},
+			{ status: 500 }
+		);
+	}
 }
-
-
 
 // import { NextRequest, NextResponse } from 'next/server';
 // import { createWriteStream, existsSync, mkdirSync } from 'fs';
@@ -55,15 +62,15 @@ export async function POST(req: NextRequest) {
 // async function upload(request) {
 //   const formData = await request.formData();
 //   const file = formData.get("file") ;
-//   const userId = formData.get("userId");
+//   const user_id = formData.get("user_id");
 //   const slug = formData.get("slug");
 
-//   if (!file || !userId || !slug) {
-//     console.error("Missing file, userId, or slug.");
+//   if (!file || !user_id || !slug) {
+//     console.error("Missing file, user_id, or slug.");
 //     return false;
 //   }
 
-//   const uploadDir = join(process.cwd(), 'public/uploads', userId);
+//   const uploadDir = join(process.cwd(), 'public/uploads', user_id);
 //   if (!existsSync(uploadDir)) {
 //     mkdirSync(uploadDir, { recursive: true });
 //   }
@@ -74,7 +81,7 @@ export async function POST(req: NextRequest) {
 //   const fileStream = createWriteStream(filePath);
 //   const fileReadableStream = new Readable();
 //   fileReadableStream._read = () => {};
-  
+
 //   const buffer = await file.arrayBuffer();
 //   fileReadableStream.push(Buffer.from(buffer));
 //   fileReadableStream.push(null);
@@ -88,7 +95,7 @@ export async function POST(req: NextRequest) {
 //       })
 //       .on("finish", () => {
 //         console.log("File saved successfully at:", filePath);
-//         resolve(`/uploads/${userId}/${fileName}`);
+//         resolve(`/uploads/${user_id}/${fileName}`);
 //       });
 //   });
 // }
@@ -103,8 +110,6 @@ export async function POST(req: NextRequest) {
 //   return NextResponse.json({ message: "File uploaded successfully", path });
 // };
 
-
-
 // import { NextRequest, NextResponse } from 'next/server';
 // import { createWriteStream, existsSync, mkdirSync } from 'fs';
 // import { join } from 'path';
@@ -115,18 +120,18 @@ export async function POST(req: NextRequest) {
 
 //   return new Promise((resolve, reject) => {
 //     const file = formData.get("file") as File;
-//     const userId = formData.get("userId") as string;
+//     const user_id = formData.get("user_id") as string;
 //     const slug = formData.get("slug") as string;
 
-//     if (!file || !userId || !slug) {
-//       console.error("Missing file, userId, or slug.");
+//     if (!file || !user_id || !slug) {
+//       console.error("Missing file, user_id, or slug.");
 //       resolve(false);
 //       return;
 //     }
 
-//     const uploadDir = join(process.cwd(), 'public/uploads', userId);
+//     const uploadDir = join(process.cwd(), 'public/uploads', user_id);
 
-//     // Ensure the user-specific directory exists
+//     // Ensure the User-specific directory exists
 //     if (!existsSync(uploadDir)) {
 //       mkdirSync(uploadDir, { recursive: true });
 //     }
@@ -151,7 +156,7 @@ export async function POST(req: NextRequest) {
 //         })
 //         .on("finish", () => {
 //           console.log("File saved successfully at:", filePath);
-//           resolve(`/uploads/${userId}/${filename}`); // Return the relative path to the file
+//           resolve(`/uploads/${user_id}/${filename}`); // Return the relative path to the file
 //         });
 //     });
 //   });

@@ -1,52 +1,58 @@
 // src/app/api/admin/instructor-applications/route.ts
 
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db/index';
-import { instructorApplications } from '@/db/schemas/instructor';
-import { user } from '@/db/schemas/user';
-import { desc, eq } from 'drizzle-orm';
-import { getSession } from '@/libs/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/index";
+import { InstructorApplications } from "@/db/schemas/instructor";
+import { User } from "@/db/schemas/User";
+import { desc, eq } from "drizzle-orm";
+import { getSession } from "@/libs/auth";
 
 // src/app/api/admin/instructor-applications/route.ts
 
-export const dynamic = 'force-dynamic';
-
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  try {
-    // Authentication (ensure only admins can access)
-    const session = await getSession();
-    if (!session || !session.user || !session.user.roles.includes('admin')) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+	try {
+		// Authentication (ensure only admins can access)
+		const session = await getSession(req);
+		if (
+			!session ||
+			!session.User ||
+			!session.User.roles.includes("admin")
+		) {
+			return NextResponse.json(
+				{ message: "Unauthorized" },
+				{ status: 401 }
+			);
+		}
 
-    // Fetch instructor applications with status 'pending'
-    const applications = await db
-      .select({
-        id: instructorApplications.id,
-        userId: instructorApplications.userId,
-        instructorBio: instructorApplications.instructorBio,
-        qualifications: instructorApplications.qualifications,
-        status: instructorApplications.status,
-        createdAt: instructorApplications.createdAt,
-        updatedAt: instructorApplications.updatedAt,
-        name: user.name,
-        email: user.email,
-      })
-      .from(instructorApplications)
-      .leftJoin(user, eq(instructorApplications.userId, user.id))
-      .where(eq(instructorApplications.status, 'pending'))
-      .orderBy(desc(instructorApplications.createdAt));
+		// Fetch instructor applications with status 'pending'
+		const applications = await db
+			.select({
+				id: InstructorApplications.id,
+				user_id: InstructorApplications.user_id,
+				instructor_bio: InstructorApplications.instructor_bio,
+				qualifications: InstructorApplications.qualifications,
+				status: InstructorApplications.status,
+				created_at: InstructorApplications.created_at,
+				updated_at: InstructorApplications.updated_at,
+				name: User.name,
+				email: User.email,
+			})
+			.from(InstructorApplications)
+			.leftJoin(User, eq(InstructorApplications.user_id, User.id))
+			.where(eq(InstructorApplications.status, "pending"))
+			.orderBy(desc(InstructorApplications.created_at));
 
-    return NextResponse.json({ applications }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching instructor applications:', error);
-    return NextResponse.json(
-      { message: 'Error fetching instructor applications', error: error.message },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json({ applications }, { status: 200 });
+	} catch (error) {
+		console.error("Error fetching instructor applications:", error);
+		return NextResponse.json(
+			{
+				message: "Error fetching instructor applications",
+				error: error.message,
+			},
+			{ status: 500 }
+		);
+	}
 }

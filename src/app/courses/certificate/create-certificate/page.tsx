@@ -1,25 +1,22 @@
-"use client"
+"use client";
 import PageWrapper from "@/components/shared/wrappers/PageWrapper";
 import ThemeController from "@/components/shared/others/ThemeController";
 import CreateCerMain from "../_comp/CreateCerMain";
 
 const page: React.FC = () => {
-  
-
-  return (
-    <PageWrapper>
-      <main>
-        <CreateCerMain />
-      </main>
-      <ThemeController />
-    </PageWrapper>
-  );
+	return (
+		<PageWrapper>
+			<main>
+				<CreateCerMain />
+			</main>
+			<ThemeController />
+		</PageWrapper>
+	);
 };
 
 export default page;
 
-
-// // pages/create-certification.tsx
+// // pages/create-Certification.tsx
 
 // 'use client'; // Ensure this is the first line
 
@@ -46,12 +43,12 @@ export default page;
 
 //   // State for HTML Design
 //   const [htmlContent, setHtmlContent] = useState<string>('');
-//   const [placeholders, setPlaceholders] = useState<string[]>([
+//   const [Placeholders, setPlaceholders] = useState<string[]>([
 //     '%{{username}}',
 //     '%{{signature}}',
 //     '%{{date}}',
 //     '%{{course}}',
-//     // Add more placeholders as needed
+//     // Add more Placeholders as needed
 //   ]);
 
 //   const handleImageUpload = (src: string) => {
@@ -207,7 +204,7 @@ export default page;
 //                 {/* Placeholder Picker */}
 //                 <div className="space-y-4">
 //                   <PlaceholderPicker
-//                     placeholders={placeholders}
+//                     Placeholders={Placeholders}
 //                     onInsertPlaceholder={handleInsertPlaceholder}
 //                   />
 //                 </div>
@@ -225,7 +222,7 @@ export default page;
 //               designMode={designMode}
 //               htmlContent={htmlContent}
 //               setHtmlContent={setHtmlContent}
-//               placeholders={placeholders}
+//               Placeholders={Placeholders}
 //             />
 //           </div>
 //         </div>
